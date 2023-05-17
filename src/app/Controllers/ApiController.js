@@ -1,22 +1,23 @@
+import { createUser } from "../../services/userServices";
+
 class ApiController {
-  // [GET] /
-  users(req, res, next) {
-    res.send({
-      data: [
-        {
-          name: "The van",
-          className: "20v7a2",
-        },
-        {
-          name: "The van",
-          className: "20v7a2",
-        },
-        {
-          name: "The van",
-          className: "20v7a2",
-        },
-      ],
+  // [GET] /api/v1/users/all [Kiet]
+  getAllUsers(req, res, next) {
+    res.send("ok");
+  }
+
+  // [POST] /api/v1/users/create [Kiet]
+  async handleCreateUser(req, res, next) {
+    const { fullName, email, password, type, sdt, address } = req.body;
+    const userDoc = await createUser({
+      fullName,
+      email,
+      password,
+      type,
+      sdt,
+      address,
     });
+    res.status(200).json(userDoc);
   }
 
   // [GET] /about
