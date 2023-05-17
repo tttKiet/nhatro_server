@@ -1,10 +1,18 @@
-const express = require("express");
-import route from "./routers";
+const express = require("express"); // ES5
+import route from "./routers"; // ES6
+import connectDb from "./config/db";
 import * as dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 8080;
+
+// config data resquest
+app.use(express.urlencoded());
+app.use(express.json());
+
+// Connect to db
+connectDb();
 
 route(app);
 
