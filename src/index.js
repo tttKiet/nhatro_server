@@ -5,7 +5,11 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 8080;
+
+// config data resquest
+app.use(express.urlencoded());
+app.use(express.json());
 
 // Connect to db
 connectDb();
