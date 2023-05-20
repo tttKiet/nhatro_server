@@ -4,7 +4,7 @@ import { ApiController } from "../app/Controllers";
 const router = express.Router();
 
 // /api/v1
-router.get("/users/all", ApiController.getAllUsers);
+router.get("/users/all-users", ApiController.getAllUsers);
 router.post("/user/login", ApiController.handleLogin);
 router.post("/users/create", ApiController.handleCreateUser);
 router.get("/rooms", ApiController.rooms);
