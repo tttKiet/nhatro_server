@@ -29,4 +29,18 @@ const createUser = ({ fullName, email, password, type, sdt, address }) => {
   });
 };
 
-export { createUser };
+const login = ({ phone, pass }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const userDoc = await User.findOne({ phone, password: pass });
+      if (!userDoc) {
+        resolve({ err: 1, message: "Số điện hoặc mật khẩu không đúng!" });
+      }
+      resolve({ err: 0, message: "Đăng nhập thành công!" });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+export default { createUser, login };
