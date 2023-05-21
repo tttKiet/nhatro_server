@@ -2,19 +2,20 @@ import { userServices } from "../../services";
 
 class ApiController {
   // [GET] /api/v1/users/all [Kiet]
-  getAllUsers(req, res, next) {
-    res.send("ok");
+  async getAllUsers(req, res, next) {
+    const docUsers = await userServices.getAllUsers();
+    res.status(200).json(docUsers);
   }
 
   // [POST] /api/v1/users/create [Kiet]
   async handleCreateUser(req, res, next) {
-    const { fullName, email, password, type, sdt, address } = req.body;
+    const { fullName, email, password, type, phone, address } = req.body;
     const userDoc = await userServices.createUser({
       fullName,
       email,
       password,
       type,
-      sdt,
+      phone,
       address,
     });
     res.status(200).json(userDoc);
