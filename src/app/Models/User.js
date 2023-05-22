@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-const { Schema } = mongoose;
+const { Schema, models } = mongoose;
 
 const userSchema = new Schema({
   fullName: String,
@@ -10,6 +10,6 @@ const userSchema = new Schema({
   address: String,
 });
 
-const User = mongoose.model("User", userSchema);
+const User = models.User || mongoose.model("User", userSchema);
 
 export default User;

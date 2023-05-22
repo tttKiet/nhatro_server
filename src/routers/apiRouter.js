@@ -5,6 +5,8 @@ const router = express.Router();
 
 // /api/v1
 router.get("/users/all-users", ApiController.getAllUsers);
+router.get("/user", ApiController.getUserById);
+router.patch("/user", ApiController.handleUpdateUser);
 router.post("/user/login", ApiController.handleLogin);
 router.post("/users/create", ApiController.handleCreateUser);
 router.get("/rooms", ApiController.rooms);

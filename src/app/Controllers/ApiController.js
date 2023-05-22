@@ -7,6 +7,47 @@ class ApiController {
     res.status(200).json(docUsers);
   }
 
+  // [GET] /api/v1/user?_id= [Kiet]
+  async getUserById(req, res, next) {
+    const _id = req.query._id;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+
+    const docUser = await userServices.getUserById(_id);
+    return res.status(200).json(docUser);
+  }
+
+  // [patch] /api/v1/user?_id= [Kiet]
+  async handleUpdateUser(req, res, next) {
+    const _id = req.query._id;
+    const { fullName, email, password, phone, address } = req.body;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+    if (!fullName || !email || !password || !phone || !address) {
+      return res.status(200).json({
+        err: 2,
+        message: "Lỗi dữ liệu rỗng!",
+      });
+    }
+
+    const docUser = await userServices.updateUser(_id, {
+      fullName,
+      email,
+      password,
+      phone,
+      address,
+    });
+    return res.status(200).json(docUser);
+  }
+
   // [POST] /api/v1/users/create [Kiet]
   async handleCreateUser(req, res, next) {
     const { fullName, email, password, type, phone, address } = req.body;
