@@ -135,4 +135,40 @@ const getUserById = async (id) => {
   });
 };
 
-export default { createUser, login, getAllUsers, getUserById, updateUser };
+const handleDeleteUser = async (_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(_id);
+      if (!isValid) {
+        return resolve({
+          err: 3,
+          message: `${_id} không phải là id đúng định dạng!`,
+        });
+      }
+      const user = await User.deleteOne({ _id });
+      if (user)
+        return resolve({
+          err: 0,
+          message: `Xóa người dùng ${_id} thành công!`,
+          dataUser: user,
+        });
+      else {
+        resolve({
+          err: 2,
+          message: `Không tìm thấy thông tin người dùng ${_id}!`,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export default {
+  createUser,
+  login,
+  getAllUsers,
+  getUserById,
+  updateUser,
+  handleDeleteUser,
+};

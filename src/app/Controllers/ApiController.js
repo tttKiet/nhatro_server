@@ -21,6 +21,21 @@ class ApiController {
     return res.status(200).json(docUser);
   }
 
+  // [DELETE] /api/v1/user/delete/:_id [Kiet]
+  async handleDeleteUser(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+
+    const docUser = await userServices.handleDeleteUser(_id);
+    return res.status(200).json(docUser);
+  }
+
   // [patch] /api/v1/user?_id= [Kiet]
   async handleUpdateUser(req, res, next) {
     const _id = req.query._id;
