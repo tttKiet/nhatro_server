@@ -84,14 +84,14 @@ class ApiController {
 
   // [POST] /api/v1/user/login [Kiet]
   async handleLogin(req, res, next) {
-    const { phone, pass } = req.body;
-    if (!phone || !pass) {
+    const { email, password } = req.body;
+    if (!email || !password) {
       return res.status(200).json({
         err: 2,
         message: "Thiếu tham số!",
       });
     }
-    const response = await userServices.login({ phone, pass });
+    const response = await userServices.login({ email, password });
     return res.status(200).json(response);
   }
 }
