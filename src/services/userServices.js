@@ -68,12 +68,12 @@ const updateUser = (_id, { fullName, email, password, phone, address }) => {
   });
 };
 
-const login = ({ phone, pass }) => {
+const login = ({ email, password }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const userDoc = await User.findOne({ phone, password: pass });
+      const userDoc = await User.findOne({ email, password });
       if (!userDoc) {
-        resolve({ err: 1, message: "Số điện hoặc mật khẩu không đúng!" });
+        resolve({ err: 1, message: "Email hoặc mật khẩu không đúng!" });
       }
 
       userDoc.password = "#";
@@ -87,7 +87,7 @@ const login = ({ phone, pass }) => {
 const getAllUsers = async () => {
   return new Promise(async (resolve, reject) => {
     try {
-      const users = await User.find();
+      const users = await User.find({ type: { $ne: "root" } });
       if (users)
         resolve({
           err: 0,
