@@ -1,4 +1,4 @@
-import { userServices } from "../../services";
+import { userServices, boardHouseServices } from "../../services";
 
 class ApiController {
   // [GET] /api/v1/users/all [Kiet]
@@ -92,6 +92,43 @@ class ApiController {
       });
     }
     const response = await userServices.login({ email, password });
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/board-house/create [The Van]
+  async handleCreateBoardHouse(req, res, next) {
+    const { adminId, rootId } = req.body;
+    if (!adminId || !rootId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id của admin hoặc root",
+      });
+    }
+    const response = await boardHouseServices.createBoardHouse({
+      adminId,
+      rootId,
+    });
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /api/v1/board-house/update?adminId= & boardHouseId= [The Van]
+  async handleUpdateBoardHouse(req, res, next) {
+    const { adminId, boardHouseId } = req.query;
+    const { name, address, phone, electricPrice, waterPrice, images } =
+      req.body;
+
+    // Cần xử lý dữ liệu đầu vào từ body
+    if (!adminId || !boardHouseId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+    const response = await boardHouseServices.updateBoardHouse(
+      adminId,
+      boardHouseId,
+      { name, address, phone, electricPrice, waterPrice, images }
+    );
     return res.status(200).json(response);
   }
 }

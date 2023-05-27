@@ -12,4 +12,8 @@ router.post("/user/login", ApiController.handleLogin);
 router.post("/users/create", ApiController.handleCreateUser);
 router.get("/rooms", ApiController.rooms);
 
+// Admin
+router.post("/board-house/create", ApiController.handleCreateBoardHouse);
+router.patch("/board-house/update", ApiController.handleUpdateBoardHouse);
+
 export default router;
