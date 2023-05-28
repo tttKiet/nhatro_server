@@ -164,6 +164,97 @@ const handleDeleteUser = async (_id) => {
   });
 };
 
+const updatePermissions = (_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(_id);
+      if (!isValid) {
+        return resolve({
+          err: 2,
+          message: `${_id} không phải là id đúng định dạng!`,
+        });
+      }
+
+      const { type } = await typeUser(_id);
+      if (type === "admin") {
+        // handle database when delete admin permissions
+        // ...
+        // end
+        // update db
+        const userUpdate = await User.updateOne({ _id }, { type: "user" });
+        if (userUpdate) {
+          resolve({
+            err: 0,
+            message: "Demoted user successfully!",
+          });
+        } else {
+          resolve({
+            err: 1,
+            message: "Demoted user fail!",
+          });
+        }
+      } else if (type === "user") {
+        const { emailVerified } = await checkEmailVerified(_id);
+        if (!emailVerified) {
+          resolve({
+            err: 2,
+            message: "Upgrade user error so that email is not verified!",
+          });
+        } else {
+          const userUpdate = await User.updateOne({ _id }, { type: "admin" });
+          if (userUpdate) {
+            resolve({
+              err: 0,
+              message: "Upgrade user successfully!",
+            });
+          } else {
+            resolve({
+              err: 1,
+              message: "Upgrade user fail!",
+            });
+          }
+        }
+      }
+      resolve({
+        err: 3,
+        message: "Error!",
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const typeUser = async (_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = await User.findOne({ _id });
+      if (!user) {
+        resolve({ err: 1, message: "User not found!" });
+      } else {
+        resolve({ err: 0, message: "OK!", type: user.type });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const checkEmailVerified = async (_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = await User.findOne({ _id });
+      if (!user) {
+        resolve({ err: 1, message: "User not found!" });
+      } else {
+        resolve({ err: 0, message: "OK!", emailVerified: user.emailVerified });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   createUser,
   login,
@@ -171,4 +262,5 @@ export default {
   getUserById,
   updateUser,
   handleDeleteUser,
+  updatePermissions,
 };

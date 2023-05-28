@@ -94,6 +94,19 @@ class ApiController {
     const response = await userServices.login({ email, password });
     return res.status(200).json(response);
   }
+
+  // [GET] /permissions/user/:_id [Kiet]
+  async handlePermissionsUser(req, res, next) {
+    const { _id } = req.params;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu tham số!",
+      });
+    }
+    const response = await userServices.updatePermissions(_id);
+    return res.status(200).json(response);
+  }
 }
 
 export default new ApiController();
