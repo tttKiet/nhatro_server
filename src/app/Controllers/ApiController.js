@@ -117,18 +117,59 @@ class ApiController {
     const { name, address, phone, electricPrice, waterPrice, images } =
       req.body;
 
-    // Cần xử lý dữ liệu đầu vào từ body
     if (!adminId || !boardHouseId) {
       return res.status(200).json({
         err: 1,
         message: "Thiếu id",
       });
     }
+
+    if (!name || !address || !phone || !electricPrice || !waterPrice) {
+      return res.status(200).json({
+        err: 2,
+        message: "Thiếu dữ liệu nhập vào",
+      });
+    }
+
     const response = await boardHouseServices.updateBoardHouse(
       adminId,
       boardHouseId,
       { name, address, phone, electricPrice, waterPrice, images }
     );
+    return res.status(200).json(response);
+  }
+
+  // [DELETE] /api/v1/board-house/delete/:_id?adminId= & rootId=
+  async handleDeleteBoardHouse(req, res, next) {
+    const { id } = req.params;
+    const { adminId, rootId } = req.query;
+    console.log(id);
+
+    if (!adminId || !rootId || !id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    const response = await boardHouseServices.deleteBoardHouse(
+      adminId,
+      rootId,
+      id
+    );
+    return res.status(200).json(response);
+  }
+  // [GET] /api/v1/board-house? adminId=
+  async handleGetBoardHouse(req, res, next) {
+    const { adminId } = req.query;
+    if (!adminId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    const response = await boardHouseServices.getBoardHouseById(adminId);
     return res.status(200).json(response);
   }
 }
