@@ -1,4 +1,5 @@
 const express = require("express"); // ES5
+import cookieParser from "cookie-parser";
 import route from "./routers"; // ES6
 import connectDb from "./config/db";
 import cors from "cors";
@@ -12,8 +13,12 @@ const port = process.env.PORT || 8080;
 app.use(express.urlencoded());
 app.use(express.json());
 
+// use cookie
+app.use(cookieParser());
+
 app.use(
   cors({
+    credentials: true,
     origin: "http://127.0.0.1:5173", // chỉ cho phép truy cập từ domain này []
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // chỉ cho phép sử dụng các phương thức này
     // allowedHeaders: ["Content-Type"], // chỉ cho phép sử dụng các header này

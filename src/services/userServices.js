@@ -1,13 +1,29 @@
 import { User } from "../app/Models";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
+import * as dotenv from "dotenv";
+dotenv.config();
+const secretKey = process.env.PRIVATE_KEY_JWT;
+
 var ObjectId = require("mongoose").Types.ObjectId;
 
 const createUser = ({ fullName, email, password, type, phone, address }) => {
   return new Promise(async (resolve, reject) => {
+    const userExits = await User.findOne({ email });
+    if (userExits) {
+      return resolve({
+        err: 2,
+        message: "Email existed!",
+      });
+    }
+    const hashPassword = bcrypt.hashSync(password, salt);
     try {
       const userDoc = await User.create({
         fullName,
         email,
-        password,
+        password: hashPassword,
         type,
         phone,
         address,
@@ -71,16 +87,55 @@ const updateUser = (_id, { fullName, email, password, phone, address }) => {
 const login = ({ email, password }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const userDoc = await User.findOne({ email, password });
+      const userDoc = await User.findOne({ email });
       if (!userDoc) {
-        resolve({ err: 1, message: "Email hoặc mật khẩu không đúng!" });
+        return resolve({ err: 1, message: "Email no existed!" });
       }
 
-      userDoc.password = "#";
-      resolve({ err: 0, message: "Đăng nhập thành công!", dataUser: userDoc });
+      const isComparePassword = await bcrypt.compareSync(
+        password,
+        userDoc.password
+      );
+
+      if (isComparePassword) {
+        // create token
+        const payload = {
+          id: userDoc._id,
+          fullName: userDoc.fullName,
+          email: userDoc.email,
+          type: userDoc.type,
+        };
+
+        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+          if (err) {
+            return resolve({
+              err: 1,
+              message: "err",
+            });
+          }
+          return resolve({
+            err: 0,
+            token: token,
+          });
+        });
+      } else {
+        return resolve({
+          err: 2,
+          message: "Email or password done sure!",
+        });
+      }
     } catch (err) {
       reject(err);
     }
+  });
+};
+
+const getProfileUser = (token) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, secretKey, {}, (err, userData) => {
+      if (err) resolve("err");
+      resolve(userData);
+    });
   });
 };
 
@@ -263,4 +318,5 @@ export default {
   updateUser,
   handleDeleteUser,
   updatePermissions,
+  getProfileUser,
 };

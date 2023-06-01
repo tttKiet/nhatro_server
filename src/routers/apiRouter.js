@@ -14,6 +14,9 @@ router.delete("/user/delete/:_id", ApiController.handleDeleteUser);
 // get user by _id
 router.get("/user", ApiController.getUserById);
 
+// get user getProfile
+router.get("/profile", ApiController.getProfile);
+
 // edit information user
 router.patch("/user", ApiController.handleUpdateUser);
 
@@ -25,6 +28,9 @@ router.post("/users/create", ApiController.handleCreateUser);
 
 // permissions account
 router.get("/permissions/user/:_id", ApiController.handlePermissionsUser);
+
+// loggout
+router.get("/loggout", ApiController.handleLoggout);
 
 // test
 router.get("/rooms", ApiController.rooms);

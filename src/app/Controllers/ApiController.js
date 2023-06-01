@@ -7,6 +7,30 @@ class ApiController {
     res.status(200).json(docUsers);
   }
 
+  // [GET] /api/v1/profile [Kiet]
+  async getProfile(req, res, next) {
+    const token = req.cookies?.token;
+    const verifytoken = await userServices.getProfileUser(token);
+
+    if (!token) {
+      res.status(200).json({ err: 1, message: "Token not found" });
+    } else if (verifytoken === "err") {
+      res
+        .status(200)
+        .json({ err: 2, err: "Verifytoken expiressed or invalid" });
+    } else {
+      res.status(200).json({ err: 0, token: verifytoken });
+    }
+  }
+
+  // [GET] /api/v1/loggout [Kiet]
+  async handleLoggout(req, res, next) {
+    res
+      .cookie("token", "", { sameSite: "none", secure: true })
+      .status(200)
+      .json("ok");
+  }
+
   // [GET] /api/v1/user?_id= [Kiet]
   async getUserById(req, res, next) {
     const _id = req.query._id;
@@ -92,7 +116,14 @@ class ApiController {
       });
     }
     const response = await userServices.login({ email, password });
-    return res.status(200).json(response);
+    if (response.err === 0) {
+      const { token, userData } = response;
+      res
+        .cookie("token", token, { sameSite: "none", secure: true })
+        .json({ err: 0, message: "Login successfully!!", token, userData });
+    } else {
+      return res.status(200).json(response);
+    }
   }
 
   // [GET] /permissions/user/:_id [Kiet]
