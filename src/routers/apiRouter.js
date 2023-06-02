@@ -12,10 +12,13 @@ router.post("/user/login", ApiController.handleLogin);
 router.post("/users/create", ApiController.handleCreateUser);
 router.get("/rooms", ApiController.rooms);
 
-// board house
+// /api/v1 [board-house]
 router.post("/board-house/create", ApiController.handleCreateBoardHouse);
 router.get("/board-house", ApiController.handleGetBoardHouse);
 router.patch("/board-house/update", ApiController.handleUpdateBoardHouse);
 router.delete("/board-house/delete/:id", ApiController.handleDeleteBoardHouse);
+
+// /api/v1 [room]
+router.post("/room/create", ApiController.handleCreateRoom);
 
 export default router;

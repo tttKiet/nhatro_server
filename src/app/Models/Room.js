@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import BoardHouse from "./BoardHouse";
 const { Schema, models } = mongoose;
 
 const roomSchema = new Schema({
@@ -7,15 +8,15 @@ const roomSchema = new Schema({
   isLayout: { type: Boolean, default: false },
   price: { type: String, default: "" },
   description: { type: String, default: "" },
-  images: [{ type: String }],
-  boardHousesId: { type: mongoose.Types.ObjectId, ref: "BoardHouse" },
+  images: [{ type: String, default: [] }],
+  boardHouseId: { type: mongoose.Types.ObjectId, ref: BoardHouse },
 });
 
 const Room = models.Room || mongoose.model("Room", roomSchema);
 
 roomSchema.pre("save", async function (next) {
   const existingRoomsCount = await Room.countDocuments({
-    boardHousesId: this.boardHousesId,
+    boardHouseId: this.boardHouseId,
   });
 
   // Tăng số thứ tự lên 1 nếu không có phòng nào tồn tại với boardHousesId này trước đó

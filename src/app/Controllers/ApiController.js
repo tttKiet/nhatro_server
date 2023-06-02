@@ -1,4 +1,4 @@
-import { userServices, boardHouseServices } from "../../services";
+import { userServices, boardHouseServices, roomServices } from "../../services";
 
 class ApiController {
   // [GET] /api/v1/users/all [Kiet]
@@ -124,7 +124,14 @@ class ApiController {
       });
     }
 
-    if (!name || !address || !phone || !electricPrice || !waterPrice) {
+    if (
+      !name ||
+      !address ||
+      !phone ||
+      !electricPrice ||
+      !waterPrice ||
+      !images
+    ) {
       return res.status(200).json({
         err: 2,
         message: "Thiếu dữ liệu nhập vào",
@@ -139,7 +146,7 @@ class ApiController {
     return res.status(200).json(response);
   }
 
-  // [DELETE] /api/v1/board-house/delete/:_id?adminId= & rootId=
+  // [DELETE] /api/v1/board-house/delete/:_id?adminId= & rootId= [The Van]
   async handleDeleteBoardHouse(req, res, next) {
     const { id } = req.params;
     const { adminId, rootId } = req.query;
@@ -159,7 +166,7 @@ class ApiController {
     );
     return res.status(200).json(response);
   }
-  // [GET] /api/v1/board-house? adminId=
+  // [GET] /api/v1/board-house? adminId= [The Van]
   async handleGetBoardHouse(req, res, next) {
     const { adminId } = req.query;
     if (!adminId) {
@@ -170,6 +177,31 @@ class ApiController {
     }
 
     const response = await boardHouseServices.getBoardHouseById(adminId);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/room/create [The Van]
+  async handleCreateRoom(req, res, next) {
+    const { size, isLayout, price, description, images, boardHouseId } =
+      req.body;
+
+    console.log(size, isLayout, price, description, boardHouseId);
+    const isMissingData = !size || !price || !description || !boardHouseId;
+
+    if (isMissingData) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu dữ liệu",
+      });
+    }
+    const response = await roomServices.createRoom({
+      size,
+      isLayout,
+      price,
+      description,
+      images,
+      boardHouseId,
+    });
     return res.status(200).json(response);
   }
 }
