@@ -1,8 +1,16 @@
-import { User } from "../app/Models";
-import bcrypt from "bcrypt";
+import { User, Account } from "../app/Models";
 import jwt from "jsonwebtoken";
+import admin from "firebase-admin";
+import serviceAccount from "../jsons/firebaseconfigadmin.json";
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+import bcrypt from "bcrypt";
 const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
+
 import * as dotenv from "dotenv";
 dotenv.config();
 const secretKey = process.env.PRIVATE_KEY_JWT;
@@ -104,6 +112,7 @@ const login = ({ email, password }) => {
           fullName: userDoc.fullName,
           email: userDoc.email,
           type: userDoc.type,
+          avatar: userDoc.avatar,
         };
 
         jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
@@ -136,6 +145,121 @@ const getProfileUser = (token) => {
       if (err) resolve("err");
       resolve(userData);
     });
+  });
+};
+
+const loginWithSocial = (token) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      if (!decodedToken)
+        return resolve({
+          err: 1,
+          message: "Invalid token",
+        });
+
+      const {
+        name,
+        picture,
+        uid,
+        firebase: { sign_in_provider },
+      } = decodedToken;
+
+      const accDoc = await findAccount(uid);
+      if (!accDoc) {
+        const userDoc = await User.create({
+          fullName: name,
+          avatar: picture,
+          email: "",
+          password: "",
+          type: "user",
+          phone: "",
+          address: "",
+        });
+        if (!userDoc) {
+          return resolve({
+            err: 2,
+            message: "Create User failed!",
+          });
+        }
+
+        const accDocForUser = await Account.create({
+          providerId: sign_in_provider,
+          uid: uid,
+          userId: userDoc._id,
+        });
+
+        if (!accDocForUser) {
+          return resolve({
+            err: 6,
+            message: "Create account failed!",
+          });
+        }
+
+        const payload = {
+          id: userDoc._id,
+          fullName: userDoc.fullName,
+          email: userDoc.email,
+          type: userDoc.type,
+          avatar: userDoc.avatar,
+        };
+
+        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+          if (err) {
+            return resolve({
+              err: 3,
+              message: "Create jwt failed!",
+            });
+          }
+          return resolve({
+            err: 0,
+            token: token,
+          });
+        });
+      } else {
+        // having accDoc
+        console.log("accDoc: ", accDoc);
+
+        const payload = {
+          id: accDoc.userId._id,
+          fullName: accDoc.userId.fullName,
+          email: accDoc.userId.email,
+          type: accDoc.userId.type,
+          avatar: accDoc.userId.avatar,
+        };
+        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+          if (err) {
+            return resolve({
+              err: 3,
+              message: "Create jwt failed!",
+            });
+          }
+          return resolve({
+            err: 0,
+            token: token,
+          });
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
+
+const findAccount = (uid) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const accDoc = await Account.findOne({
+        uid: uid,
+      }).populate("userId");
+      if (accDoc) {
+        resolve(accDoc);
+      }
+      resolve("");
+    } catch (error) {
+      reject(error);
+    }
   });
 };
 
@@ -319,4 +443,5 @@ export default {
   handleDeleteUser,
   updatePermissions,
   getProfileUser,
+  loginWithSocial,
 };

@@ -126,6 +126,28 @@ class ApiController {
     }
   }
 
+  // [POST] /api/v1/user/login/social  [Kiet]
+  async handleLoginWithSocial(req, res, next) {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ err: "Please! Enter your token!" });
+    }
+    try {
+      const response = await userServices.loginWithSocial(token);
+      if (response.err === 0) {
+        const { token } = response;
+        return res
+          .cookie("token", token, { sameSite: "none", secure: true })
+          .status(200)
+          .json({ err: 0, message: "Login successfully!!", token });
+      } else {
+        return res.status(401).json("Error token!");
+      }
+    } catch (err) {
+      return res.status(401).json("Invalid token!");
+    }
+  }
   // [GET] /permissions/user/:_id [Kiet]
   async handlePermissionsUser(req, res, next) {
     const { _id } = req.params;

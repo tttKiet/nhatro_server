@@ -18,8 +18,8 @@ app.use(cookieParser());
 
 app.use(
   cors({
+    origin: ["http://127.0.0.1:5173", "http://localhost:5173"], // chỉ cho phép truy cập từ domain này []
     credentials: true,
-    origin: "http://127.0.0.1:5173", // chỉ cho phép truy cập từ domain này []
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // chỉ cho phép sử dụng các phương thức này
     // allowedHeaders: ["Content-Type"], // chỉ cho phép sử dụng các header này
   })

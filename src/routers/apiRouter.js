@@ -20,6 +20,9 @@ router.get("/profile", ApiController.getProfile);
 // edit information user
 router.patch("/user", ApiController.handleUpdateUser);
 
+// login with social auth
+router.post("/user/login/social", ApiController.handleLoginWithSocial);
+
 // authn login
 router.post("/user/login", ApiController.handleLogin);
 
