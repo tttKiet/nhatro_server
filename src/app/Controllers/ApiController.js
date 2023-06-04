@@ -204,6 +204,19 @@ class ApiController {
     });
     return res.status(200).json(response);
   }
+
+  // [GET] /api/v1/board-house/room? adminId= [The Van]
+  async handleGetAllRooms(req, res, next) {
+    const { adminId } = req.query;
+    if (!adminId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu adminId",
+      });
+    }
+    const response = await roomServices.getAllRoomsByAdminId(adminId);
+    return res.status(200).json(response);
+  }
 }
 
 export default new ApiController();

@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import BoardHouse from "./BoardHouse";
-const { Schema, models } = mongoose;
+
+const { Schema } = mongoose;
 
 const roomSchema = new Schema({
   number: { type: Number, default: 1 },
@@ -9,12 +9,12 @@ const roomSchema = new Schema({
   price: { type: String, default: "" },
   description: { type: String, default: "" },
   images: [{ type: String, default: [] }],
-  boardHouseId: { type: mongoose.Types.ObjectId, ref: BoardHouse },
+  boardHouseId: { type: mongoose.Types.ObjectId, ref: "BoardHouse" },
 });
 
-const Room = models.Room || mongoose.model("Room", roomSchema);
-
 roomSchema.pre("save", async function (next) {
+  const Room = mongoose.model("Room", roomSchema);
+
   const existingRoomsCount = await Room.countDocuments({
     boardHouseId: this.boardHouseId,
   });
@@ -24,5 +24,7 @@ roomSchema.pre("save", async function (next) {
 
   next();
 });
+
+const Room = mongoose.model("Room", roomSchema);
 
 export default Room;

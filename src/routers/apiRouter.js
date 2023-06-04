@@ -20,5 +20,6 @@ router.delete("/board-house/delete/:id", ApiController.handleDeleteBoardHouse);
 
 // /api/v1 [room]
 router.post("/room/create", ApiController.handleCreateRoom);
+router.get("/board-house/room", ApiController.handleGetAllRooms);
 
 export default router;

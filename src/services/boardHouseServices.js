@@ -37,7 +37,11 @@ const createBoardHouse = ({ adminId, rootId }) => {
         userId: adminId,
       });
 
-      if (boardHouseDoc) {
+      const populatedBoardHouseDoc = await BoardHouse.findById(
+        boardHouseDoc._id
+      ).populate("userId");
+
+      if (populatedBoardHouseDoc) {
         return resolve({
           err: 0,
           message: "Tạo dãy trọ thành công",
