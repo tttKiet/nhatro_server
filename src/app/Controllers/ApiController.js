@@ -180,27 +180,24 @@ class ApiController {
     return res.status(200).json(response);
   }
 
-  // [POST] /api/v1/room/create [The Van]
+  // [POST] /api/v1/board-house/room/create/:id [The Van]
   async handleCreateRoom(req, res, next) {
-    const { size, isLayout, price, description, images, boardHouseId } =
-      req.body;
+    const { id } = req.params;
 
-    console.log(size, isLayout, price, description, boardHouseId);
-    const isMissingData = !size || !price || !description || !boardHouseId;
+    const { size, isLayout, price, description, images } = req.body;
 
-    if (isMissingData) {
+    if (!size || !price || !isLayout || !description || !images) {
       return res.status(200).json({
         err: 1,
         message: "Thiếu dữ liệu",
       });
     }
-    const response = await roomServices.createRoom({
+    const response = await roomServices.createRoom(id, {
       size,
       isLayout,
       price,
       description,
       images,
-      boardHouseId,
     });
     return res.status(200).json(response);
   }
@@ -215,6 +212,19 @@ class ApiController {
       });
     }
     const response = await roomServices.getAllRoomsByAdminId(adminId);
+    return res.status(200).json(response);
+  }
+
+  // [DELETE] /api/v1/board-house/room/delete/:id [The Van]
+  async handleDeleteRoom(req, res, next) {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu roomId",
+      });
+    }
+    const response = await roomServices.deleteRoomById(id);
     return res.status(200).json(response);
   }
 }
