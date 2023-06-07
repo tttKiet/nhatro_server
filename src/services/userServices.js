@@ -1,13 +1,37 @@
-import { User } from "../app/Models";
+import { User, Account } from "../app/Models";
+import jwt from "jsonwebtoken";
+import admin from "firebase-admin";
+import serviceAccount from "../jsons/firebaseconfigadmin.json";
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+import bcrypt from "bcrypt";
+const saltRounds = 10;
+const salt = bcrypt.genSaltSync(saltRounds);
+
+import * as dotenv from "dotenv";
+dotenv.config();
+const secretKey = process.env.PRIVATE_KEY_JWT;
+
 var ObjectId = require("mongoose").Types.ObjectId;
 
 const createUser = ({ fullName, email, password, type, phone, address }) => {
   return new Promise(async (resolve, reject) => {
+    const userExits = await User.findOne({ email });
+    if (userExits) {
+      return resolve({
+        err: 2,
+        message: "Email existed!",
+      });
+    }
+    const hashPassword = bcrypt.hashSync(password, salt);
     try {
       const userDoc = await User.create({
         fullName,
         email,
-        password,
+        password: hashPassword,
         type,
         phone,
         address,
@@ -71,15 +95,170 @@ const updateUser = (_id, { fullName, email, password, phone, address }) => {
 const login = ({ email, password }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const userDoc = await User.findOne({ email, password });
+      const userDoc = await User.findOne({ email });
       if (!userDoc) {
-        resolve({ err: 1, message: "Email hoặc mật khẩu không đúng!" });
+        return resolve({ err: 1, message: "Email no existed!" });
       }
 
-      userDoc.password = "#";
-      resolve({ err: 0, message: "Đăng nhập thành công!", dataUser: userDoc });
+      const isComparePassword = await bcrypt.compareSync(
+        password,
+        userDoc.password
+      );
+
+      if (isComparePassword) {
+        // create token
+        const payload = {
+          id: userDoc._id,
+          fullName: userDoc.fullName,
+          email: userDoc.email,
+          type: userDoc.type,
+          avatar: userDoc.avatar,
+        };
+
+        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+          if (err) {
+            return resolve({
+              err: 1,
+              message: "err",
+            });
+          }
+          return resolve({
+            err: 0,
+            token: token,
+          });
+        });
+      } else {
+        return resolve({
+          err: 2,
+          message: "Email or password done sure!",
+        });
+      }
     } catch (err) {
       reject(err);
+    }
+  });
+};
+
+const getProfileUser = (token) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(token, secretKey, {}, (err, userData) => {
+      if (err) resolve("err");
+      resolve(userData);
+    });
+  });
+};
+
+const loginWithSocial = (token) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      if (!decodedToken)
+        return resolve({
+          err: 1,
+          message: "Invalid token",
+        });
+
+      const {
+        name,
+        picture,
+        uid,
+        firebase: { sign_in_provider },
+      } = decodedToken;
+
+      const accDoc = await findAccount(uid);
+      if (!accDoc) {
+        const userDoc = await User.create({
+          fullName: name,
+          avatar: picture,
+          email: "",
+          password: "",
+          type: "user",
+          phone: "",
+          address: "",
+        });
+        if (!userDoc) {
+          return resolve({
+            err: 2,
+            message: "Create User failed!",
+          });
+        }
+
+        const accDocForUser = await Account.create({
+          providerId: sign_in_provider,
+          uid: uid,
+          userId: userDoc._id,
+        });
+
+        if (!accDocForUser) {
+          return resolve({
+            err: 6,
+            message: "Create account failed!",
+          });
+        }
+
+        const payload = {
+          id: userDoc._id,
+          fullName: userDoc.fullName,
+          email: userDoc.email,
+          type: userDoc.type,
+          avatar: userDoc.avatar,
+        };
+
+        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+          if (err) {
+            return resolve({
+              err: 3,
+              message: "Create jwt failed!",
+            });
+          }
+          return resolve({
+            err: 0,
+            token: token,
+          });
+        });
+      } else {
+        // having accDoc
+
+        const payload = {
+          id: accDoc.userId._id,
+          fullName: accDoc.userId.fullName,
+          email: accDoc.userId.email,
+          type: accDoc.userId.type,
+          avatar: accDoc.userId.avatar,
+        };
+        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+          if (err) {
+            return resolve({
+              err: 3,
+              message: "Create jwt failed!",
+            });
+          }
+          return resolve({
+            err: 0,
+            token: token,
+          });
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      reject(err);
+    }
+  });
+};
+
+const findAccount = (uid) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const accDoc = await Account.findOne({
+        uid: uid,
+      }).populate("userId");
+      console.log(accDoc);
+      if (accDoc) {
+        resolve(accDoc);
+      }
+      resolve("");
+    } catch (error) {
+      reject(error);
     }
   });
 };
@@ -164,6 +343,164 @@ const handleDeleteUser = async (_id) => {
   });
 };
 
+const updatePermissions = (_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(_id);
+      if (!isValid) {
+        return resolve({
+          err: 2,
+          message: `${_id} không phải là id đúng định dạng!`,
+        });
+      }
+
+      const { type } = await typeUser(_id);
+      if (type === "admin") {
+        // handle database when delete admin permissions
+        // ...
+        // end
+        // update db
+        const userUpdate = await User.updateOne({ _id }, { type: "user" });
+        if (userUpdate) {
+          resolve({
+            err: 0,
+            message: "Demoted user successfully!",
+          });
+        } else {
+          resolve({
+            err: 1,
+            message: "Demoted user fail!",
+          });
+        }
+      } else if (type === "user") {
+        const { emailVerified } = await checkEmailVerified(_id);
+        if (!emailVerified) {
+          resolve({
+            err: 2,
+            message: "Upgrade user error so that email is not verified!",
+          });
+        } else {
+          const userUpdate = await User.updateOne({ _id }, { type: "admin" });
+          if (userUpdate) {
+            resolve({
+              err: 0,
+              message: "Upgrade user successfully!",
+            });
+          } else {
+            resolve({
+              err: 1,
+              message: "Upgrade user fail!",
+            });
+          }
+        }
+      }
+      resolve({
+        err: 3,
+        message: "Error!",
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const typeUser = async (_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = await User.findOne({ _id });
+      if (!user) {
+        resolve({ err: 1, message: "User not found!" });
+      } else {
+        resolve({ err: 0, message: "OK!", type: user.type });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const checkEmailVerified = async (_id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const user = await User.findOne({ _id });
+      if (!user) {
+        resolve({ err: 1, message: "User not found!" });
+      } else {
+        resolve({ err: 0, message: "OK!", emailVerified: user.emailVerified });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const checkEmailExisted = async (email) => {
+  try {
+    const res = await User.findOne({ email });
+    if (res) return res;
+    else return false;
+  } catch (error) {
+    return "err";
+  }
+};
+
+const updateInfoUser = async (_id, data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { email, bio, fullName, address, phone, school, personalities } =
+        data;
+      if (!email || !fullName || !address || !phone) {
+        return resolve({
+          err: 1,
+          message: `Missing iunput pagrams`,
+        });
+      }
+      const emailExisted = await checkEmailExisted(email);
+      if (emailExisted && !emailExisted._id.equals(_id)) {
+        return resolve({
+          err: 4,
+          message: `Email existed!`,
+        });
+      }
+      const isValid = ObjectId.isValid(_id);
+      if (!isValid) {
+        return resolve({
+          err: 2,
+          message: `${_id} invalid!`,
+        });
+      }
+
+      const userDoc = await User.findByIdAndUpdate(
+        { _id },
+        {
+          email,
+          bio: bio ? bio : "",
+          fullName,
+          address,
+          phone,
+          school: school ? school : "",
+          personalities:
+            personalities && personalities.length > 0 ? personalities : [],
+        }
+      );
+
+      if (userDoc) {
+        return resolve({
+          err: 0,
+          message: `Updated informaiton!`,
+        });
+      } else {
+        return resolve({
+          err: 5,
+          message: `No found user!`,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   createUser,
   login,
@@ -171,4 +508,8 @@ export default {
   getUserById,
   updateUser,
   handleDeleteUser,
+  updatePermissions,
+  getProfileUser,
+  loginWithSocial,
+  updateInfoUser,
 };
