@@ -20,7 +20,7 @@ router.patch("/user", ApiController.handleUpdateUser);
 // authn login
 router.post("/user/login", ApiController.handleLogin);
 
-// create new user
+// create new user  
 router.post("/users/create", ApiController.handleCreateUser);
 
 // permissions account
@@ -28,5 +28,14 @@ router.get("/permissions/user/:_id", ApiController.handlePermissionsUser);
 
 // test
 router.get("/rooms", ApiController.rooms);
+
+//create a feedback  Than
+router.post("/user/feedback/create/:_id",ApiController.handleCreateFeedback);
+
+//update a feedback  Than
+router.patch("/user/feedback/update/:_id",ApiController.handleUpdateFeedback);
+
+//delete a feedback Than
+router.delete("/user/feedback/delete/:_id", ApiController.handleDeleteFeedback);
 
 export default router;
