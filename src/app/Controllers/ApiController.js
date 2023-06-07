@@ -1,4 +1,4 @@
-import { userServices } from "../../services";
+import { userServices, boardHouseServices, roomServices } from "../../services";
 
 class ApiController {
   // [GET] /api/v1/users/all [Kiet]
@@ -161,6 +161,163 @@ class ApiController {
     return res.status(200).json(response);
   }
 
+  // [POST] /api/v1/board-house/create [The Van]
+  async handleCreateBoardHouse(req, res, next) {
+    const { adminId, rootId } = req.body;
+    if (!adminId || !rootId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id của admin hoặc root",
+      });
+    }
+    const response = await boardHouseServices.createBoardHouse({
+      adminId,
+      rootId,
+    });
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /api/v1/board-house/update?adminId= & boardHouseId= [The Van]
+  async handleUpdateBoardHouse(req, res, next) {
+    const { adminId, boardHouseId } = req.query;
+    const { name, address, phone, electricPrice, waterPrice, images } =
+      req.body;
+
+    if (!adminId || !boardHouseId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    if (
+      !name ||
+      !address ||
+      !phone ||
+      !electricPrice ||
+      !waterPrice ||
+      !images
+    ) {
+      return res.status(200).json({
+        err: 2,
+        message: "Thiếu dữ liệu nhập vào",
+      });
+    }
+
+    const response = await boardHouseServices.updateBoardHouse(
+      adminId,
+      boardHouseId,
+      { name, address, phone, electricPrice, waterPrice, images }
+    );
+    return res.status(200).json(response);
+  }
+
+  // [DELETE] /api/v1/board-house/delete/:_id?adminId= & rootId= [The Van]
+  async handleDeleteBoardHouse(req, res, next) {
+    const { id } = req.params;
+    const { adminId, rootId } = req.query;
+   
+
+    if (!adminId || !rootId || !id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    const response = await boardHouseServices.deleteBoardHouse(
+      adminId,
+      rootId,
+      id
+    );
+    return res.status(200).json(response);
+  }
+  // [GET] /api/v1/board-house? adminId= [The Van]
+  async handleGetBoardHouse(req, res, next) {
+    const { adminId } = req.query;
+    if (!adminId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    const response = await boardHouseServices.getBoardHouseById(adminId);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/board-house/room/create/:id [The Van]
+  async handleCreateRoom(req, res, next) {
+    const { id } = req.params;
+
+    const { number, size, isLayout, price, description, images } = req.body;
+
+    if ((!number, !size || !price || !isLayout || !description)) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu dữ liệu",
+      });
+    }
+    const response = await roomServices.createRoom(id, {
+      number,
+      size,
+      isLayout,
+      price,
+      description,
+      images,
+    });
+    return res.status(200).json(response);
+  }
+
+  // [GET] /api/v1/board-house/room? adminId= [The Van]
+  async handleGetAllRooms(req, res, next) {
+    const { adminId } = req.query;
+    if (!adminId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu adminId",
+      });
+    }
+    const response = await roomServices.getAllRoomsByAdminId(adminId);
+    return res.status(200).json(response);
+  }
+
+  // [DELETE] /api/v1/board-house/room/delete/:id [The Van]
+  async handleDeleteRoom(req, res, next) {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu roomId",
+      });
+    }
+    const response = await roomServices.deleteRoomById(id);
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /api/v1/board-house/room/update/:id [The Van]
+  async handleUpdateRoom(req, res, next) {
+    const { id } = req.params;
+    const { number, size, isLayout, price, description, images } = req.body;
+
+    if (!number || !size || !price || !isLayout || !description) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu dữ liệu",
+      });
+    }
+
+    const response = await roomServices.updateRoom(id, {
+      number,
+      size,
+      isLayout,
+      price,
+      description,
+      images,
+    });
+
+    return res.status(200).json(response);
+
   // [PATCH] /users/:_id [Kiet]
   async handleUpdateInfoUser(req, res, next) {
     const { _id } = req.params;
@@ -181,6 +338,7 @@ class ApiController {
     } catch (err) {
       return res.status(501).json("Error updating! 501");
     }
+
   }
 }
 
