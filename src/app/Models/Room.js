@@ -12,18 +12,18 @@ const roomSchema = new Schema({
   boardHouseId: { type: mongoose.Types.ObjectId, ref: "BoardHouse" },
 });
 
-roomSchema.pre("save", async function (next) {
-  const Room = mongoose.model("Room", roomSchema);
+// roomSchema.pre("save", async function (next) {
+//   const Room = mongoose.model("Room", roomSchema);
 
-  const existingRoomsCount = await Room.countDocuments({
-    boardHouseId: this.boardHouseId,
-  });
+//   const existingRoomsCount = await Room.countDocuments({
+//     boardHouseId: this.boardHouseId,
+//   });
 
-  // Tăng số thứ tự lên 1 nếu không có phòng nào tồn tại với boardHousesId này trước đó
-  this.number = existingRoomsCount === 0 ? 1 : existingRoomsCount + 1;
+//   // Tăng số thứ tự lên 1 nếu không có phòng nào tồn tại với boardHousesId này trước đó
+//   this.number = existingRoomsCount === 0 ? 1 : existingRoomsCount + 1;
 
-  next();
-});
+//   next();
+// });
 
 const Room = mongoose.model("Room", roomSchema);
 

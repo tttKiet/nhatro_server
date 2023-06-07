@@ -13,14 +13,15 @@ const createRoom = (id, roomData) => {
         });
       }
 
-      const { size, isLayout, price, description, images } = roomData;
-      console.log("is layout: ", isLayout);
+      const { number, size, isLayout, price, description, images } = roomData;
+
       let convertIsLayout = false;
       if (isLayout === "Yes") {
         convertIsLayout = true;
       }
 
       const roomDoc = await Room.create({
+        number,
         size,
         isLayout: convertIsLayout,
         price,
@@ -155,37 +156,42 @@ const updateRoom = (id, roomData) => {
     try {
       const isValidId = ObjectId.isValid(id);
 
-      if (!isValidAdmin || !isValidBoardHouse) {
+      if (!isValidId) {
         return resolve({
           err: 1,
           message: "Id không đúng định dạng",
         });
       }
 
-      const adminDoc = await User.findById(adminId);
-
-      if (!adminDoc || adminDoc.type !== "admin") {
-        return resolve({
-          err: 2,
-          message: `${adminId}: Bạn không phải là admin`,
-        });
+      const { number, size, isLayout, price, description, images } = roomData;
+      console.log("fsdfsd", id);
+      let convertIsLayout = false;
+      if (isLayout === "Yes") {
+        convertIsLayout = true;
       }
 
-      const boardHouseDoc = await BoardHouse.findOneAndUpdate(
-        { _id: boardHouseId, userId: adminId },
-        { name, address, phone, electricPrice, waterPrice, images }
+      const roomDoc = await Room.findOneAndUpdate(
+        { _id: id },
+        {
+          number: number,
+          size: size,
+          isLayout: convertIsLayout,
+          price: price,
+          description: description,
+          images: images,
+        }
       );
 
-      if (boardHouseDoc) {
+      if (roomDoc) {
         return resolve({
           err: 0,
-          message: "Cập nhật dãy trọ thành công",
+          message: "Cập nhật phòng trọ thành công",
         });
       }
 
       return resolve({
-        err: 3,
-        message: "Không tìm thấy dãy trọ mà bạn muốn cập nhật",
+        err: 2,
+        message: "Không tìm thấy phòng muốn cập nhật",
       });
     } catch (error) {
       reject(error);
@@ -193,4 +199,4 @@ const updateRoom = (id, roomData) => {
   });
 };
 
-export default { createRoom, getAllRoomsByAdminId, deleteRoomById };
+export default { createRoom, getAllRoomsByAdminId, deleteRoomById, updateRoom };

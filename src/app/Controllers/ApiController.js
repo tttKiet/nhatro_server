@@ -184,15 +184,16 @@ class ApiController {
   async handleCreateRoom(req, res, next) {
     const { id } = req.params;
 
-    const { size, isLayout, price, description, images } = req.body;
+    const { number, size, isLayout, price, description, images } = req.body;
 
-    if (!size || !price || !isLayout || !description || !images) {
+    if ((!number, !size || !price || !isLayout || !description)) {
       return res.status(200).json({
         err: 1,
         message: "Thiếu dữ liệu",
       });
     }
     const response = await roomServices.createRoom(id, {
+      number,
       size,
       isLayout,
       price,
@@ -225,6 +226,30 @@ class ApiController {
       });
     }
     const response = await roomServices.deleteRoomById(id);
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /api/v1/board-house/room/update/:id [The Van]
+  async handleUpdateRoom(req, res, next) {
+    const { id } = req.params;
+    const { number, size, isLayout, price, description, images } = req.body;
+
+    if (!number || !size || !price || !isLayout || !description) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu dữ liệu",
+      });
+    }
+
+    const response = await roomServices.updateRoom(id, {
+      number,
+      size,
+      isLayout,
+      price,
+      description,
+      images,
+    });
+
     return res.status(200).json(response);
   }
 }
