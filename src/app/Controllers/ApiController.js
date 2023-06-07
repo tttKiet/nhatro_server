@@ -216,7 +216,6 @@ class ApiController {
   async handleDeleteBoardHouse(req, res, next) {
     const { id } = req.params;
     const { adminId, rootId } = req.query;
-   
 
     if (!adminId || !rootId || !id) {
       return res.status(200).json({
@@ -317,6 +316,7 @@ class ApiController {
     });
 
     return res.status(200).json(response);
+  }
 
   // [PATCH] /users/:_id [Kiet]
   async handleUpdateInfoUser(req, res, next) {
@@ -338,7 +338,6 @@ class ApiController {
     } catch (err) {
       return res.status(501).json("Error updating! 501");
     }
-
   }
 }
 
