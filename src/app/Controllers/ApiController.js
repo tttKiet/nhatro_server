@@ -160,6 +160,28 @@ class ApiController {
     const response = await userServices.updatePermissions(_id);
     return res.status(200).json(response);
   }
+
+  // [PATCH] /users/:_id [Kiet]
+  async handleUpdateInfoUser(req, res, next) {
+    const { _id } = req.params;
+    const data = req.body;
+    if (!_id) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing _id user!",
+      });
+    }
+    if (Object.keys(data).length === 0) {
+      return res.status(501).json("Error updating! 500");
+    }
+
+    try {
+      const response = await userServices.updateInfoUser(_id, data);
+      return res.status(200).json(response);
+    } catch (err) {
+      return res.status(501).json("Error updating! 501");
+    }
+  }
 }
 
 export default new ApiController();

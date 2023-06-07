@@ -11,6 +11,9 @@ const userSchema = new Schema(
     avatar: { type: String, default: "svg" },
     phone: String,
     address: String,
+    bio: String,
+    personalities: [{ type: String }],
+    school: String,
   },
   { timestamps: true }
 );

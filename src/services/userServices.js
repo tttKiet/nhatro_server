@@ -218,7 +218,6 @@ const loginWithSocial = (token) => {
         });
       } else {
         // having accDoc
-        console.log("accDoc: ", accDoc);
 
         const payload = {
           id: accDoc.userId._id,
@@ -253,6 +252,7 @@ const findAccount = (uid) => {
       const accDoc = await Account.findOne({
         uid: uid,
       }).populate("userId");
+      console.log(accDoc);
       if (accDoc) {
         resolve(accDoc);
       }
@@ -434,6 +434,73 @@ const checkEmailVerified = async (_id) => {
   });
 };
 
+const checkEmailExisted = async (email) => {
+  try {
+    const res = await User.findOne({ email });
+    if (res) return res;
+    else return false;
+  } catch (error) {
+    return "err";
+  }
+};
+
+const updateInfoUser = async (_id, data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const { email, bio, fullName, address, phone, school, personalities } =
+        data;
+      if (!email || !fullName || !address || !phone) {
+        return resolve({
+          err: 1,
+          message: `Missing iunput pagrams`,
+        });
+      }
+      const emailExisted = await checkEmailExisted(email);
+      if (emailExisted && !emailExisted._id.equals(_id)) {
+        return resolve({
+          err: 4,
+          message: `Email existed!`,
+        });
+      }
+      const isValid = ObjectId.isValid(_id);
+      if (!isValid) {
+        return resolve({
+          err: 2,
+          message: `${_id} invalid!`,
+        });
+      }
+
+      const userDoc = await User.findByIdAndUpdate(
+        { _id },
+        {
+          email,
+          bio: bio ? bio : "",
+          fullName,
+          address,
+          phone,
+          school: school ? school : "",
+          personalities:
+            personalities && personalities.length > 0 ? personalities : [],
+        }
+      );
+
+      if (userDoc) {
+        return resolve({
+          err: 0,
+          message: `Updated informaiton!`,
+        });
+      } else {
+        return resolve({
+          err: 5,
+          message: `No found user!`,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   createUser,
   login,
@@ -444,4 +511,5 @@ export default {
   updatePermissions,
   getProfileUser,
   loginWithSocial,
+  updateInfoUser,
 };

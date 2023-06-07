@@ -14,6 +14,9 @@ router.delete("/user/delete/:_id", ApiController.handleDeleteUser);
 // get user by _id
 router.get("/user", ApiController.getUserById);
 
+// update info user
+router.patch("/users/:_id", ApiController.handleUpdateInfoUser);
+
 // get user getProfile
 router.get("/profile", ApiController.getProfile);
 
