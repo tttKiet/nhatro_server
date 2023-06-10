@@ -53,4 +53,15 @@ router.get("/board-house/room", ApiController.handleGetAllRooms);
 router.delete("/board-house/room/delete/:id", ApiController.handleDeleteRoom);
 router.patch("/board-house/room/update/:id", ApiController.handleUpdateRoom);
 
+// [code] verify - email
+router.post("/user/verify/email/send-code", ApiController.handleSendCodeEmail);
+router.post(
+  "/user/verify/email/check-exist-code",
+  ApiController.handleCheckExistCodeEmail
+);
+router.post(
+  "/user/verify/email/verify-code",
+  ApiController.handleVerifyCodeEmail
+);
+
 export default router;

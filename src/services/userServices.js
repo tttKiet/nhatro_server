@@ -1,4 +1,4 @@
-import { User, Account } from "../app/Models";
+import { User, Account, Code } from "../app/Models";
 import jwt from "jsonwebtoken";
 import admin from "firebase-admin";
 import serviceAccount from "../jsons/firebaseconfigadmin.json";
@@ -12,6 +12,7 @@ const saltRounds = 10;
 const salt = bcrypt.genSaltSync(saltRounds);
 
 import * as dotenv from "dotenv";
+import emailServices from "./emailServices";
 dotenv.config();
 const secretKey = process.env.PRIVATE_KEY_JWT;
 
@@ -252,7 +253,6 @@ const findAccount = (uid) => {
       const accDoc = await Account.findOne({
         uid: uid,
       }).populate("userId");
-      console.log(accDoc);
       if (accDoc) {
         resolve(accDoc);
       }
@@ -501,6 +501,118 @@ const updateInfoUser = async (_id, data) => {
   });
 };
 
+const verifyTokenEmail = (email, userId, code) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(userId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `Id:${userId} invalid!`,
+        });
+      }
+      if (code.length !== 6) {
+        return resolve({
+          err: 2,
+          message: `Code:${code} invalid!`,
+        });
+      }
+
+      const currentTimestamp = new Date();
+      const codeDoc = await Code.findOneAndDelete({
+        user: userId,
+        code,
+        email,
+        expires: { $gt: currentTimestamp },
+      }).sort({ expires: -1 });
+
+      if (!codeDoc) {
+        return resolve({
+          err: 3,
+          message: `Code don't match! The code has expired or is not correct!`,
+        });
+      } else {
+        const userUpdate = await User.findByIdAndUpdate(
+          { _id: userId },
+          {
+            email: email,
+            emailVerified: true,
+          }
+        );
+
+        if (!userUpdate) {
+          return resolve({
+            err: 4,
+            message: `${email} has not been verified!`,
+          });
+        }
+
+        return resolve({
+          err: 0,
+          message: `${email} has been verified!`,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const sendCodeEmail = async (email, userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(userId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `Id:${userId} invalid!`,
+        });
+      }
+
+      const user = await User.findOne({ _id: userId });
+
+      if (!user) {
+        return resolve({
+          err: 2,
+          message: "User not found!",
+        });
+      } else {
+        const emailExisted = await checkEmailExisted(email);
+        if (emailExisted && !emailExisted._id.equals(userId)) {
+          return resolve({ err: 5, message: "Email exsted!" });
+        }
+        const emailVerCode = await emailServices.sendCodeEmail(email);
+        if (!emailVerCode) {
+          return resolve({ err: 3, message: "Failed when send code!" });
+        }
+
+        const codeDoc = await Code.create({
+          code: emailVerCode,
+          user: userId,
+          email: email,
+        });
+
+        if (!codeDoc) {
+          return resolve({
+            err: 4,
+            message: "Error when save db!",
+          });
+        }
+
+        await user.updateOne({ email: email });
+        await user.save();
+
+        return resolve({
+          err: 0,
+          message: "OK!",
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   createUser,
   login,
@@ -512,4 +624,6 @@ export default {
   getProfileUser,
   loginWithSocial,
   updateInfoUser,
+  sendCodeEmail,
+  verifyTokenEmail,
 };

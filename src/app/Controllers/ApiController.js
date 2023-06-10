@@ -1,4 +1,10 @@
-import { userServices, boardHouseServices, roomServices } from "../../services";
+import {
+  userServices,
+  boardHouseServices,
+  roomServices,
+  emailServices,
+  codeServices,
+} from "../../services";
 
 class ApiController {
   // [GET] /api/v1/users/all [Kiet]
@@ -338,6 +344,47 @@ class ApiController {
     } catch (err) {
       return res.status(501).json("Error updating! 501");
     }
+  }
+
+  // [POST] /user/verify/email/send-code [Kiet]
+  async handleSendCodeEmail(req, res, next) {
+    const { email, userId } = req.body;
+    if (!email || !userId) {
+      return res
+        .status(401)
+        .json("Invalid email address! Please enter a valid email address.");
+    }
+    const response = await userServices.sendCodeEmail(email, userId);
+    if (response.err === 0) {
+      return res.status(200).json(response);
+    }
+    return res.status(400).json(response);
+  }
+
+  // [POST] /user/verify/email/verify-code [Kiet]
+  async handleVerifyCodeEmail(req, res, next) {
+    const { code, userId, email } = req.body;
+    if (!code || !userId || !email) {
+      return res.status(401).json("Missing code or user");
+    }
+    const response = await userServices.verifyTokenEmail(email, userId, code);
+    if (response.err === 0) {
+      return res.status(200).json(response);
+    }
+    return res.status(400).json(response);
+  }
+
+  // [POST] /user/verify/email/check-exist-code [Kiet]
+  async handleCheckExistCodeEmail(req, res, next) {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(401).json("Missing email!");
+    }
+    const isHaveCode = await codeServices.checkCodeForEmail(email);
+    if (isHaveCode) {
+      return res.status(200).json({ err: 0, message: "Existed code!" });
+    }
+    return res.status(200).json({ err: 1, message: "Not existed code!" });
   }
 }
 
