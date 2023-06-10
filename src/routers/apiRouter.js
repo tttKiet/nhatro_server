@@ -53,4 +53,17 @@ router.get("/board-house/room", ApiController.handleGetAllRooms);
 router.delete("/board-house/room/delete/:id", ApiController.handleDeleteRoom);
 router.patch("/board-house/room/update/:id", ApiController.handleUpdateRoom);
 
+// [upload images cloudinary]
+// Upload a image
+router.post("/upload-image", ApiController.handleUploadImage);
+
+// Upload images
+router.post("/upload-images", ApiController.handleUploadImages);
+
+// Delete image
+router.delete("/delete-image", ApiController.handleDeleteImage);
+
+// Delete images
+router.delete("/delete-images", ApiController.handleDeleteImages);
+
 export default router;
