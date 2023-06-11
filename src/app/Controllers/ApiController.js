@@ -5,6 +5,7 @@ import {
   emailServices,
   codeServices,
   cloudinaryServices,
+  reqRoomOwnerServices,
 } from "../../services";
 
 class ApiController {
@@ -170,16 +171,15 @@ class ApiController {
 
   // [POST] /api/v1/board-house/create [The Van]
   async handleCreateBoardHouse(req, res, next) {
-    const { adminId, rootId } = req.body;
-    if (!adminId || !rootId) {
+    const { adminId } = req.body;
+    if (!adminId) {
       return res.status(200).json({
         err: 1,
-        message: "Thiếu id của admin hoặc root",
+        message: "Missing adminId",
       });
     }
     const response = await boardHouseServices.createBoardHouse({
       adminId,
-      rootId,
     });
     return res.status(200).json(response);
   }
@@ -258,7 +258,7 @@ class ApiController {
 
     const { number, size, isLayout, price, description, images } = req.body;
 
-    if ((!number, !size || !price || !isLayout || !description)) {
+    if (!number || !size || !price || !isLayout || !description) {
       return res.status(200).json({
         err: 1,
         message: "Thiếu dữ liệu",
@@ -442,6 +442,74 @@ class ApiController {
       return res.status(200).json({ err: 0, message: "Existed code!" });
     }
     return res.status(200).json({ err: 1, message: "Not existed code!" });
+  }
+
+  // [POST] /api/v1/user/create-req-board-house [The Van]
+  async handleCreateReqBoardHouse(req, res, next) {
+    const { data } = req.body;
+
+    const {
+      userId,
+      name,
+      address,
+      phone,
+      electricPrice,
+      waterPrice,
+      images,
+      description,
+    } = data;
+
+    if (
+      !userId ||
+      !name ||
+      !address ||
+      !phone ||
+      !electricPrice ||
+      !waterPrice ||
+      !images ||
+      !description
+    ) {
+      return res.status(401).json("Missing data!");
+    }
+
+    // Create a new board house
+    const boardHouseRes = await boardHouseServices.createBoardHouseFromReq({
+      userId,
+      name,
+      address,
+      phone,
+      electricPrice,
+      waterPrice,
+      images,
+    });
+
+    if (boardHouseRes.err === 0) {
+      const reqRes = await reqRoomOwnerServices.createReqRoomOwner(
+        userId,
+        boardHouseRes.boardHouseId,
+        description
+      );
+      return res.status(200).json(reqRes);
+    }
+
+    return res.status(401).json({
+      err: 1,
+      message: "Something went wrong at handleCreateReqBoardHouse",
+    });
+  }
+
+  // [GET] /api/v1/root/all-request-board-house [The Van]
+  async handleGetAllRequest(req, res, next) {
+    const { id } = req.params;
+    console.log("first", id);
+
+    if (!id) {
+      return res.status(401).json("Missing data!");
+    }
+
+    const response = await reqRoomOwnerServices.getAllReq(id);
+
+    return res.status(200).json(response);
   }
 }
 

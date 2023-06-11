@@ -42,7 +42,7 @@ const uploadMultipleImages = (images) => {
         message: "Invalid images format. Expected an array.",
       });
     }
-    console.log(images); // return a array of images
+    // return a array of images
     const uploads = images.map((base) => uploadImage(base)); //TypeError: images.map is not a function
     Promise.all(uploads)
       .then((values) => {
