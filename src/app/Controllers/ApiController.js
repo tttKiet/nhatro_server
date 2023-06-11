@@ -346,6 +346,103 @@ class ApiController {
       return res.status(501).json("Error updating! 501");
     }
   }
+
+  // [POST] /api/v1/upload-image [The Van]
+  async handleUploadImage(req, res, next) {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.uploadImage(image);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1//upload-images [The Van]
+  async handleUploadImages(req, res, next) {
+    const { images } = req.body;
+
+    if (!images) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.uploadMultipleImages(images);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/delete-image [The Van]
+  async handleDeleteImage(req, res, next) {
+    const { imageLink } = req.body;
+
+    if (!imageLink) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.deleteSingleImg(imageLink);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/delete-images [The Van]
+  async handleDeleteImages(req, res, next) {
+    const { imageLinks } = req.body;
+
+    if (!imageLinks) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.deleteMultiplyImgs(imageLinks);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /user/verify/email/send-code [Kiet]
+  async handleSendCodeEmail(req, res, next) {
+    const { email, userId } = req.body;
+    if (!email || !userId) {
+      return res
+        .status(401)
+        .json("Invalid email address! Please enter a valid email address.");
+    }
+    const response = await userServices.sendCodeEmail(email, userId);
+    if (response.err === 0) {
+      return res.status(200).json(response);
+    }
+    return res.status(400).json(response);
+  }
+
+  // [POST] /user/verify/email/verify-code [Kiet]
+  async handleVerifyCodeEmail(req, res, next) {
+    const { code, userId, email } = req.body;
+    if (!code || !userId || !email) {
+      return res.status(401).json("Missing code or user");
+    }
+    const response = await userServices.verifyTokenEmail(email, userId, code);
+    if (response.err === 0) {
+      return res.status(200).json(response);
+    }
+    return res.status(400).json(response);
+  }
+
+  // [POST] /user/verify/email/check-exist-code [Kiet]
+  async handleCheckExistCodeEmail(req, res, next) {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(401).json("Missing email!");
+    }
+    const isHaveCode = await codeServices.checkCodeForEmail(email);
+    if (isHaveCode) {
+      return res.status(200).json({ err: 0, message: "Existed code!" });
+    }
+    return res.status(200).json({ err: 1, message: "Not existed code!" });
+  }
 }
 
 export default new ApiController();
