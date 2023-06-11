@@ -4,6 +4,7 @@ import {
   roomServices,
   emailServices,
   codeServices,
+  cloudinaryServices,
 } from "../../services";
 
 class ApiController {
@@ -344,6 +345,62 @@ class ApiController {
     } catch (err) {
       return res.status(501).json("Error updating! 501");
     }
+  }
+
+  // [POST] /api/v1/upload-image [The Van]
+  async handleUploadImage(req, res, next) {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.uploadImage(image);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1//upload-images [The Van]
+  async handleUploadImages(req, res, next) {
+    const { images } = req.body;
+
+    if (!images) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.uploadMultipleImages(images);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/delete-image [The Van]
+  async handleDeleteImage(req, res, next) {
+    const { imageLink } = req.body;
+
+    if (!imageLink) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.deleteSingleImg(imageLink);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/delete-images [The Van]
+  async handleDeleteImages(req, res, next) {
+    const { imageLinks } = req.body;
+
+    if (!imageLinks) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.deleteMultiplyImgs(imageLinks);
+    return res.status(200).json(response);
   }
 
   // [POST] /user/verify/email/send-code [Kiet]

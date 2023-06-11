@@ -64,4 +64,17 @@ router.post(
   ApiController.handleVerifyCodeEmail
 );
 
+// [upload images cloudinary]
+// Upload a image
+router.post("/upload-image", ApiController.handleUploadImage);
+
+// Upload images
+router.post("/upload-images", ApiController.handleUploadImages);
+
+// Delete image
+router.delete("/delete-image", ApiController.handleDeleteImage);
+
+// Delete images
+router.delete("/delete-images", ApiController.handleDeleteImages);
+
 export default router;

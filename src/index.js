@@ -9,6 +9,10 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 8080;
 
+// Limit to upload images
+app.use(express.json({ limit: "25mb" }));
+app.use(express.urlencoded({ limit: "25mb" }));
+
 // config data resquest
 app.use(express.urlencoded());
 app.use(express.json());
