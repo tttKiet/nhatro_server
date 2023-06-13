@@ -447,14 +447,14 @@ class ApiController {
   // [POST] /api/v1/user/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
     const {
-      userId,
       name,
       address,
       phone,
-      electricPrice,
-      waterPrice,
+      electric,
+      water,
       images,
       description,
+      userId,
     } = req.body;
 
     if (
@@ -462,8 +462,8 @@ class ApiController {
       !name ||
       !address ||
       !phone ||
-      !electricPrice ||
-      !waterPrice ||
+      !electric ||
+      !water ||
       !images ||
       !description
     ) {
@@ -476,8 +476,8 @@ class ApiController {
       name,
       address,
       phone,
-      electricPrice,
-      waterPrice,
+      electric,
+      water,
       images,
     });
 

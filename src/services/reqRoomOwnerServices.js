@@ -43,6 +43,7 @@ const createReqRoomOwner = (userId, boardHouseId, description) => {
         return resolve({
           err: 0,
           message: "Create req successfully",
+          data: populatedReqDoc,
         });
       }
 
