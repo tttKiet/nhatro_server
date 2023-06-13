@@ -219,7 +219,6 @@ const loginWithSocial = (token) => {
         });
       } else {
         // having accDoc
-
         const payload = {
           id: accDoc.userId._id,
           fullName: accDoc.userId.fullName,
@@ -598,9 +597,6 @@ const sendCodeEmail = async (email, userId) => {
             message: "Error when save db!",
           });
         }
-
-        await user.updateOne({ email: email });
-        await user.save();
 
         return resolve({
           err: 0,
