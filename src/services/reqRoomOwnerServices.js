@@ -68,7 +68,9 @@ const getAllReq = (rootId) => {
         });
       }
 
-      const reqsDoc = await ReqRoomOwner.find();
+      const reqsDoc = await ReqRoomOwner.find()
+        .populate("userId")
+        .populate("boardHouseId");
 
       if (reqsDoc) {
         return resolve({

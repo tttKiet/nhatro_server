@@ -446,8 +446,6 @@ class ApiController {
 
   // [POST] /api/v1/user/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
-    const { data } = req.body;
-
     const {
       userId,
       name,
@@ -457,7 +455,7 @@ class ApiController {
       waterPrice,
       images,
       description,
-    } = data;
+    } = req.body;
 
     if (
       !userId ||
@@ -501,7 +499,6 @@ class ApiController {
   // [GET] /api/v1/root/all-request-board-house [The Van]
   async handleGetAllRequest(req, res, next) {
     const { id } = req.params;
-    console.log("first", id);
 
     if (!id) {
       return res.status(401).json("Missing data!");
