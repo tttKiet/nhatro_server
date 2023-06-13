@@ -4,13 +4,14 @@ dotenv.config();
 
 async function main(email, code) {
   // Generate test SMTP service account from ethereal.email
-  console.log("Generating test SMTP service account: emial ", email);
+  console.log("Generating test SMTP service account: email ", email);
   // Only needed if you don't have a real mail account for testing
 
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
     service: "gmail",
-    host: "smtp.gmail.com",
+    // host: "smtp.gmail.com",
+    host: "smtp.ethereal.email",
     pool: true,
     port: 587,
     secure: false, // true for 465, false for other ports
@@ -38,11 +39,11 @@ async function main(email, code) {
                   </div>
                   <strong>${code}</strong>
                   <p>
-                    Thank you for completing your registration with [customer portal].
+                    Thank you for completing your registration with BK.
                   </p>
                   <p>
                   Regards,
-                  The [company] team
+                  The Motel team
                   </p>
                   `;
 
@@ -55,11 +56,11 @@ async function main(email, code) {
     html: htmlBody, // html body
   });
 
-  console.log("Message info: ", info);
+  // console.log("Message info: ", info);
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
   // Preview only available when sending through an Ethereal account
-  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  // console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
   // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 }
 

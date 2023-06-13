@@ -37,22 +37,26 @@ const uploadImage = (image) => {
 
 const uploadMultipleImages = (images) => {
   return new Promise((resolve, reject) => {
-    if (!Array.isArray(images)) {
-      return reject({
-        message: "Invalid images format. Expected an array.",
-      });
-    }
-    // return a array of images
-    const uploads = images.map((base) => uploadImage(base)); //TypeError: images.map is not a function
-    Promise.all(uploads)
-      .then((values) => {
-        return resolve({
-          err: 0,
-          message: "Upload images successfully",
-          data: values,
+    try {
+      if (!Array.isArray(images)) {
+        return reject({
+          message: "Invalid images format. Expected an array.",
         });
-      })
-      .catch((err) => reject(err));
+      }
+      // console.log(images); // return a array of images
+      const uploads = images.map((base) => uploadImage(base)); //TypeError: images.map is not a function
+      Promise.all(uploads)
+        .then((values) => {
+          return resolve({
+            err: 0,
+            message: "Upload images successfully",
+            data: values,
+          });
+        })
+        .catch((err) => reject(err));
+    } catch (error) {
+      reject(error);
+    }
   });
 };
 
