@@ -4,3 +4,4 @@ export { default as roomServices } from "./roomServices";
 export { default as emailServices } from "./emailServices";
 export { default as codeServices } from "./codeServices";
 export { default as cloudinaryServices } from "./cloudinaryServices";
+export { default as reqRoomOwnerServices } from "./reqRoomOwnerServices";

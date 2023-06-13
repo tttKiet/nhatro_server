@@ -64,7 +64,7 @@ router.post(
   ApiController.handleVerifyCodeEmail
 );
 
-// [upload images cloudinary]
+// [upload images cloudinary] [The Van]
 // Upload a image
 router.post("/upload-image", ApiController.handleUploadImage);
 
@@ -76,5 +76,18 @@ router.delete("/delete-image", ApiController.handleDeleteImage);
 
 // Delete images
 router.delete("/delete-images", ApiController.handleDeleteImages);
+
+// Create request room owner [The Van]
+// create request
+router.post(
+  "/user/create-req-board-house",
+  ApiController.handleCreateReqBoardHouse
+);
+
+// get request
+router.get(
+  "/root/all-request-board-house/:id",
+  ApiController.handleGetAllRequest
+);
 
 export default router;

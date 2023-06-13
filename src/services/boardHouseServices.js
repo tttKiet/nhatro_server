@@ -3,13 +3,12 @@ import { BoardHouse } from "../app/Models";
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
-const createBoardHouse = ({ adminId, rootId }) => {
+const createBoardHouse = ({ adminId }) => {
   return new Promise(async (resolve, reject) => {
     try {
       const isValidAdmin = ObjectId.isValid(adminId);
-      const isValidRoot = ObjectId.isValid(rootId);
 
-      if (!isValidAdmin || !isValidRoot) {
+      if (!isValidAdmin) {
         return resolve({
           err: 1,
           message: "Id không đúng định dạng!",
@@ -17,19 +16,11 @@ const createBoardHouse = ({ adminId, rootId }) => {
       }
 
       const admin = await User.findById(adminId);
-      const root = await User.findById(rootId);
 
-      if (!admin || !root) {
+      if (!admin) {
         return resolve({
           err: 4,
-          message: "Không tìm thấy admin hoặc root",
-        });
-      }
-
-      if (admin.type !== "admin" || root.type !== "root") {
-        return resolve({
-          err: 2,
-          message: "Lỗi xảy ra vì bạn không có quyền tạo",
+          message: "Không tìm thấy admin",
         });
       }
 
@@ -44,13 +35,65 @@ const createBoardHouse = ({ adminId, rootId }) => {
       if (populatedBoardHouseDoc) {
         return resolve({
           err: 0,
-          message: "Tạo dãy trọ thành công",
+          message: "Create board house successfully",
         });
       }
 
       return resolve({
         err: 3,
         message: "Đã có lỗi xảy ra createBoardHouse",
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const createBoardHouseFromReq = ({
+  userId,
+  name,
+  address,
+  phone,
+  electricPrice,
+  waterPrice,
+  images,
+}) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValidAdmin = ObjectId.isValid(userId);
+
+      if (!isValidAdmin) {
+        return resolve({
+          err: 1,
+          message: "Id not valid",
+        });
+      }
+
+      const boardHouseDoc = await BoardHouse.create({
+        userId: userId,
+        name,
+        address,
+        phone,
+        electricPrice,
+        waterPrice,
+        images,
+      });
+
+      const populatedBoardHouseDoc = await BoardHouse.findById(
+        boardHouseDoc._id
+      ).populate("userId");
+
+      if (populatedBoardHouseDoc) {
+        return resolve({
+          err: 0,
+          message: "Create board house successfully",
+          boardHouseId: populatedBoardHouseDoc._id,
+        });
+      }
+
+      return resolve({
+        err: 3,
+        message: "Wrong at createBoardHouseFromReq",
       });
     } catch (error) {
       reject(error);
@@ -206,4 +249,5 @@ export default {
   updateBoardHouse,
   deleteBoardHouse,
   getBoardHouseById,
+  createBoardHouseFromReq,
 };
