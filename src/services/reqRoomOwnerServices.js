@@ -91,4 +91,40 @@ const getAllReq = (rootId) => {
   });
 };
 
-export default { createReqRoomOwner, getAllReq };
+const getReqOwnerByUserId = (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(userId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `${_id} User invalid!`,
+        });
+      }
+
+      // Get all req of user
+      const reqOwnerDoc = await ReqRoomOwner.find({ userId }).populate(
+        "boardHouseId"
+      );
+
+      if (reqOwnerDoc) {
+        return resolve({
+          err: 0,
+          message: `Success!`,
+          data: reqOwnerDoc,
+        });
+      } else {
+        return resolve({
+          err: 2,
+          message: `Not found!`,
+          data: reqOwnerDoc,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      reject(error);
+    }
+  });
+};
+
+export default { createReqRoomOwner, getAllReq, getReqOwnerByUserId };

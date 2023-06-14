@@ -508,6 +508,26 @@ class ApiController {
 
     return res.status(200).json(response);
   }
+
+  // [GET] /api/v1/user/:_id/all-request-board-house [Bui Kiet]
+  async handleGetAllRequestUser(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(401).json("Missing data!");
+    }
+
+    try {
+      const response = await reqRoomOwnerServices.getReqOwnerByUserId(_id);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(401).json(response);
+      }
+    } catch (err) {
+      return res.status(401).json("Error from server!");
+    }
+  }
 }
 
 export default new ApiController();

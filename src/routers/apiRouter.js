@@ -90,4 +90,10 @@ router.get(
   ApiController.handleGetAllRequest
 );
 
+// get request of user
+router.get(
+  "/user/:_id/all-request-board-house",
+  ApiController.handleGetAllRequestUser
+);
+
 export default router;
