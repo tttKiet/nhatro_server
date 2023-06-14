@@ -1,10 +1,44 @@
-import { feedbackServices, userServices } from "../../services";
+
+import {
+  userServices,
+  boardHouseServices,
+  roomServices,
+  emailServices,
+  codeServices,
+  cloudinaryServices,
+  reqRoomOwnerServices,
+  feedbackServices,
+} from "../../services";
 
 class ApiController {
   // [GET] /api/v1/users/all [Kiet]
   async getAllUsers(req, res, next) {
     const docUsers = await userServices.getAllUsers();
     res.status(200).json(docUsers);
+  }
+
+  // [GET] /api/v1/profile [Kiet]
+  async getProfile(req, res, next) {
+    const token = req.cookies?.token;
+    const verifytoken = await userServices.getProfileUser(token);
+
+    if (!token) {
+      res.status(200).json({ err: 1, message: "Token not found" });
+    } else if (verifytoken === "err") {
+      res
+        .status(200)
+        .json({ err: 2, err: "Verifytoken expiressed or invalid" });
+    } else {
+      res.status(200).json({ err: 0, token: verifytoken });
+    }
+  }
+
+  // [GET] /api/v1/loggout [Kiet]
+  async handleLoggout(req, res, next) {
+    res
+      .cookie("token", "", { sameSite: "none", secure: true })
+      .status(200)
+      .json("ok");
   }
 
   // [GET] /api/v1/user?_id= [Kiet]
@@ -92,9 +126,38 @@ class ApiController {
       });
     }
     const response = await userServices.login({ email, password });
-    return res.status(200).json(response);
+    if (response.err === 0) {
+      const { token, userData } = response;
+      res
+        .cookie("token", token, { sameSite: "none", secure: true })
+        .json({ err: 0, message: "Login successfully!!", token, userData });
+    } else {
+      return res.status(200).json(response);
+    }
   }
 
+  // [POST] /api/v1/user/login/social  [Kiet]
+  async handleLoginWithSocial(req, res, next) {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ err: "Please! Enter your token!" });
+    }
+    try {
+      const response = await userServices.loginWithSocial(token);
+      if (response.err === 0) {
+        const { token } = response;
+        return res
+          .cookie("token", token, { sameSite: "none", secure: true })
+          .status(200)
+          .json({ err: 0, message: "Login successfully!!", token });
+      } else {
+        return res.status(401).json("Error token!");
+      }
+    } catch (err) {
+      return res.status(401).json("Invalid token!");
+    }
+  }
   // [GET] /permissions/user/:_id [Kiet]
   async handlePermissionsUser(req, res, next) {
     const { _id } = req.params;
@@ -108,7 +171,367 @@ class ApiController {
     return res.status(200).json(response);
   }
 
-//[POST] /api/v1/user/feedback/create/:_id ThanThan
+  // [POST] /api/v1/board-house/create [The Van]
+  async handleCreateBoardHouse(req, res, next) {
+    const { adminId } = req.body;
+    if (!adminId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Missing adminId",
+      });
+    }
+    const response = await boardHouseServices.createBoardHouse({
+      adminId,
+    });
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /api/v1/board-house/update?adminId= & boardHouseId= [The Van]
+  async handleUpdateBoardHouse(req, res, next) {
+    const { adminId, boardHouseId } = req.query;
+    const { name, address, phone, electricPrice, waterPrice, images } =
+      req.body;
+
+    if (!adminId || !boardHouseId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    if (
+      !name ||
+      !address ||
+      !phone ||
+      !electricPrice ||
+      !waterPrice ||
+      !images
+    ) {
+      return res.status(200).json({
+        err: 2,
+        message: "Thiếu dữ liệu nhập vào",
+      });
+    }
+
+    const response = await boardHouseServices.updateBoardHouse(
+      adminId,
+      boardHouseId,
+      { name, address, phone, electricPrice, waterPrice, images }
+    );
+    return res.status(200).json(response);
+  }
+
+  // [DELETE] /api/v1/board-house/delete/:_id?adminId= & rootId= [The Van]
+  async handleDeleteBoardHouse(req, res, next) {
+    const { id } = req.params;
+    const { adminId, rootId } = req.query;
+
+    if (!adminId || !rootId || !id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    const response = await boardHouseServices.deleteBoardHouse(
+      adminId,
+      rootId,
+      id
+    );
+    return res.status(200).json(response);
+  }
+  // [GET] /api/v1/board-house? adminId= [The Van]
+  async handleGetBoardHouse(req, res, next) {
+    const { adminId } = req.query;
+    if (!adminId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu id",
+      });
+    }
+
+    const response = await boardHouseServices.getBoardHouseById(adminId);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/board-house/room/create/:id [The Van]
+  async handleCreateRoom(req, res, next) {
+    const { id } = req.params;
+
+    const { number, size, isLayout, price, description, images } = req.body;
+
+    if (!number || !size || !price || !isLayout || !description) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu dữ liệu",
+      });
+    }
+    const response = await roomServices.createRoom(id, {
+      number,
+      size,
+      isLayout,
+      price,
+      description,
+      images,
+    });
+    return res.status(200).json(response);
+  }
+
+  // [GET] /api/v1/board-house/room? adminId= [The Van]
+  async handleGetAllRooms(req, res, next) {
+    const { adminId } = req.query;
+    if (!adminId) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu adminId",
+      });
+    }
+    const response = await roomServices.getAllRoomsByAdminId(adminId);
+    return res.status(200).json(response);
+  }
+
+  // [DELETE] /api/v1/board-house/room/delete/:id [The Van]
+  async handleDeleteRoom(req, res, next) {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu roomId",
+      });
+    }
+    const response = await roomServices.deleteRoomById(id);
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /api/v1/board-house/room/update/:id [The Van]
+  async handleUpdateRoom(req, res, next) {
+    const { id } = req.params;
+    const { number, size, isLayout, price, description, images } = req.body;
+
+    if (!number || !size || !price || !isLayout || !description) {
+      return res.status(200).json({
+        err: 1,
+        message: "Thiếu dữ liệu",
+      });
+    }
+
+    const response = await roomServices.updateRoom(id, {
+      number,
+      size,
+      isLayout,
+      price,
+      description,
+      images,
+    });
+
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /users/:_id [Kiet]
+  async handleUpdateInfoUser(req, res, next) {
+    const { _id } = req.params;
+    const data = req.body;
+    if (!_id) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing _id user!",
+      });
+    }
+    if (Object.keys(data).length === 0) {
+      return res.status(501).json("Error updating! 500");
+    }
+
+    try {
+      const response = await userServices.updateInfoUser(_id, data);
+      return res.status(200).json(response);
+    } catch (err) {
+      return res.status(501).json("Error updating! 501");
+    }
+  }
+
+  // [POST] /api/v1/upload-image [The Van]
+  async handleUploadImage(req, res, next) {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.uploadImage(image);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1//upload-images [The Van]
+  async handleUploadImages(req, res, next) {
+    const { images } = req.body;
+
+    if (!images) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.uploadMultipleImages(images);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/delete-image [The Van]
+  async handleDeleteImage(req, res, next) {
+    const { imageLink } = req.body;
+
+    if (!imageLink) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.deleteSingleImg(imageLink);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/delete-images [The Van]
+  async handleDeleteImages(req, res, next) {
+    const { imageLinks } = req.body;
+
+    if (!imageLinks) {
+      return res.status(401).json({
+        err: 1,
+        message: "Missing image",
+      });
+    }
+    const response = await cloudinaryServices.deleteMultiplyImgs(imageLinks);
+    return res.status(200).json(response);
+  }
+
+  // [POST] /user/verify/email/send-code [Kiet]
+  async handleSendCodeEmail(req, res, next) {
+    const { email, userId } = req.body;
+    if (!email || !userId) {
+      return res
+        .status(401)
+        .json("Invalid email address! Please enter a valid email address.");
+    }
+    const response = await userServices.sendCodeEmail(email, userId);
+    if (response.err === 0) {
+      return res.status(200).json(response);
+    }
+    return res.status(400).json(response);
+  }
+
+  // [POST] /user/verify/email/verify-code [Kiet]
+  async handleVerifyCodeEmail(req, res, next) {
+    const { code, userId, email } = req.body;
+    if (!code || !userId || !email) {
+      return res.status(401).json("Missing code or user");
+    }
+    const response = await userServices.verifyTokenEmail(email, userId, code);
+    if (response.err === 0) {
+      return res.status(200).json(response);
+    }
+    return res.status(400).json(response);
+  }
+
+  // [POST] /user/verify/email/check-exist-code [Kiet]
+  async handleCheckExistCodeEmail(req, res, next) {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(401).json("Missing email!");
+    }
+    const isHaveCode = await codeServices.checkCodeForEmail(email);
+    if (isHaveCode) {
+      return res.status(200).json({ err: 0, message: "Existed code!" });
+    }
+    return res.status(200).json({ err: 1, message: "Not existed code!" });
+  }
+
+  // [POST] /api/v1/user/create-req-board-house [The Van]
+  async handleCreateReqBoardHouse(req, res, next) {
+    const {
+      name,
+      address,
+      phone,
+      electric,
+      water,
+      images,
+      description,
+      userId,
+    } = req.body;
+
+    if (
+      !userId ||
+      !name ||
+      !address ||
+      !phone ||
+      !electric ||
+      !water ||
+      !images ||
+      !description
+    ) {
+      return res.status(401).json("Missing data!");
+    }
+
+    // Create a new board house
+    const boardHouseRes = await boardHouseServices.createBoardHouseFromReq({
+      userId,
+      name,
+      address,
+      phone,
+      electric,
+      water,
+      images,
+    });
+
+    if (boardHouseRes.err === 0) {
+      const reqRes = await reqRoomOwnerServices.createReqRoomOwner(
+        userId,
+        boardHouseRes.boardHouseId,
+        description
+      );
+      return res.status(200).json(reqRes);
+    }
+
+    return res.status(401).json({
+      err: 1,
+      message: "Something went wrong at handleCreateReqBoardHouse",
+    });
+  }
+
+  // [GET] /api/v1/root/all-request-board-house [The Van]
+  async handleGetAllRequest(req, res, next) {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(401).json("Missing data!");
+    }
+
+    const response = await reqRoomOwnerServices.getAllReq(id);
+
+    return res.status(200).json(response);
+  }
+
+  // [GET] /api/v1/user/:_id/all-request-board-house [Bui Kiet]
+  async handleGetAllRequestUser(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(401).json("Missing data!");
+    }
+
+    try {
+      const response = await reqRoomOwnerServices.getReqOwnerByUserId(_id);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(401).json(response);
+      }
+    } catch (err) {
+      return res.status(401).json("Error from server!");
+    }
+  }
+
+  //[POST] /api/v1/user/feedback/create/:_id ThanThan
   async handleCreateFeedback(req, res, next) {
     const {_id} = req.params
     const {title,content} = req.body
@@ -179,6 +602,19 @@ class ApiController {
     return res.status(200).json(docUser);
   }
 
+
+  async getAllFeedbacksById(req, res, next) {
+    const {_id }= req.params;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+
+    const docUser = await feedbackServices.getAllFeedbackByUserId(_id);
+    return res.status(200).json(docUser);
+  }
 
 }
 

@@ -30,22 +30,33 @@ const createFeedback = (id, data) => {
       }
     });
   };
-  const getAllFeedback = async () => {
+  const getAllFeedbackByUserId =(id) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const users = await Feedback.find({ type: { $ne: "root" } });
-        if (users)
-          resolve({
-            err: 0,
-            message: "Get feedbacks thanh cong",
-            dataUser: users,
-          });
-        else {
+
+
+        //Ktra ID hop le hay khong
+        const isValid = ObjectId.isValid(id);
+        if(!isValid){
           resolve({
             err: 1,
-            message: "Get feedbacks that bai",
+            message: `ID k hop le !!!`,
           });
         }
+        const feedbackDoc = await Feedback.find({userId:id})
+        if(feedbackDoc){
+          resolve({
+            err: 0,
+            message: "da tim thay!",
+            data: feedbackDoc
+          });
+
+        }
+        resolve({
+          err: 2,
+          message: `loi roi`,
+        });
+       
       } catch (error) {
         reject(error);
       }
@@ -119,7 +130,7 @@ const createFeedback = (id, data) => {
 
   export default {
     createFeedback,
-    getAllFeedback,
+    getAllFeedbackByUserId,
     updateFeedback,
     deleteFeedback,
   };
