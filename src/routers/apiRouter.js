@@ -29,7 +29,7 @@ router.post("/user/login/social", ApiController.handleLoginWithSocial);
 // authn login
 router.post("/user/login", ApiController.handleLogin);
 
-// create new user
+// create new user  
 router.post("/users/create", ApiController.handleCreateUser);
 
 // permissions account
@@ -40,6 +40,20 @@ router.get("/loggout", ApiController.handleLoggout);
 
 // test
 router.get("/rooms", ApiController.rooms);
+
+//create a feedback  Than
+router.post("/user/feedback/create/:_id",ApiController.handleCreateFeedback);
+
+//update a feedback  Than
+router.patch("/user/feedback/update/:_id",ApiController.handleUpdateFeedback);
+
+//delete a feedback Than
+router.delete("/user/feedback/delete/:_id", ApiController.handleDeleteFeedback);
+
+//read feedback Than
+
+router.get("/user/feedback/read/:_id",ApiController.getAllFeedbacksById);
+
 
 // /api/v1 [board-house]
 router.post("/board-house/create", ApiController.handleCreateBoardHouse);

@@ -1,3 +1,4 @@
+
 import {
   userServices,
   boardHouseServices,
@@ -6,6 +7,7 @@ import {
   codeServices,
   cloudinaryServices,
   reqRoomOwnerServices,
+  feedbackServices,
 } from "../../services";
 
 class ApiController {
@@ -528,6 +530,92 @@ class ApiController {
       return res.status(401).json("Error from server!");
     }
   }
+
+  //[POST] /api/v1/user/feedback/create/:_id ThanThan
+  async handleCreateFeedback(req, res, next) {
+    const {_id} = req.params
+    const {title,content} = req.body
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+    if(!title || !content ){
+      return res.status(200).json({
+        err: 2,
+        message: "Thiếu nội dung!!",
+      });
+    }
+    try{
+      const response = await feedbackServices.createFeedback(_id,{title,content})
+      return res.status(200).json(response);
+      
+    }
+    catch(err){
+      return res.status(401).json(response);
+    }
+
+    
+    
+    // res.status(200).json(FeedBackUser);
+  }
+
+  // [patch] /api/v1/user/feedback/update/:_id [Than]
+
+
+  async handleUpdateFeedback(req, res, next) {
+    const {_id} = req.params
+    const { title,content } = req.body;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+    if (!title || !content) {
+      return res.status(200).json({
+        err: 2,
+        message: "Lỗi nội dung rỗng!",
+      });
+    }
+
+    const feedbackDoc = await feedbackServices.updateFeedback(_id, {
+      title,
+      content,
+    });
+    return res.status(200).json(feedbackDoc);
+  }
+  
+  // [DELETE] /api/v1/user/feedback/delete/:_id [Than]
+  async handleDeleteFeedback(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+
+    const docUser = await feedbackServices.deleteFeedback(_id);
+    return res.status(200).json(docUser);
+  }
+
+
+  async getAllFeedbacksById(req, res, next) {
+    const {_id }= req.params;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+
+    const docUser = await feedbackServices.getAllFeedbackByUserId(_id);
+    return res.status(200).json(docUser);
+  }
+
 }
 
 export default new ApiController();
