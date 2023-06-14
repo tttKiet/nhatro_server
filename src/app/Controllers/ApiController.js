@@ -112,7 +112,6 @@ class ApiController {
   async handleCreateFeedback(req, res, next) {
     const {_id} = req.params
     const {title,content} = req.body
-    console.log(_id)
     if (!_id) {
       return res.status(200).json({
         err: 1,
@@ -125,8 +124,16 @@ class ApiController {
         message: "Thiếu nội dung!!",
       });
     }
-    const response = await feedbackServices.createFeedback(_id,{title,content})
-    return res.status(200).json(response);
+    try{
+      const response = await feedbackServices.createFeedback(_id,{title,content})
+      return res.status(200).json(response);
+      
+    }
+    catch(err){
+      return res.status(401).json(response);
+    }
+
+    
     
     // res.status(200).json(FeedBackUser);
   }

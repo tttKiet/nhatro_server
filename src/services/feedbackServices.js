@@ -1,11 +1,15 @@
 import { Feedback } from "../app/Models";
 var ObjectId = require("mongoose").Types.ObjectId;
 
-const createFeedback = ({ userId, title, content}) => {
+const createFeedback = (id, data) => {
     return new Promise(async (resolve, reject) => {
       try {
+        console.log("data", data)
+
+        const {title, content} = data
+
         const FeedbackDoc = await Feedback.create({
-          userId,
+          userId: id,
           title,
           content,
         });
