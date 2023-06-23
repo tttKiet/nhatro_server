@@ -636,12 +636,6 @@ class ApiController {
         errMessage: "Missing parameters!!",
       });
     }
-    if (files.length === 0) {
-      return res.status(400).json({
-        err: 5,
-        errMessage: "Erorr upload images!!",
-      });
-    }
 
     try {
       const response = await postServices.createPost({
