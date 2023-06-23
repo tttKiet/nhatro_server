@@ -496,7 +496,7 @@ class ApiController {
     });
   }
 
-  // [GET] /api/v1/root/all-request-board-house [The Van]
+  // [GET] /api/v1/root/all-request-board-house/:id [The Van]
   async handleGetAllRequest(req, res, next) {
     const { id } = req.params;
 
@@ -505,6 +505,33 @@ class ApiController {
     }
 
     const response = await reqRoomOwnerServices.getAllReq(id);
+
+    return res.status(200).json(response);
+  }
+
+  // [PATCH] /api/v1/root/accept-req/:id [The Van]
+  async handleAcceptReq(req, res, next) {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(401).json("Missing data!");
+    }
+
+    const response = await reqRoomOwnerServices.acceptReq(id);
+
+    return res.status(200).json(response);
+  }
+
+  async handleRejectReq(req, res, next) {
+    const { id } = req.params;
+    const { boardHouseId } = req.body;
+    console.log("first", boardHouseId);
+
+    if (!id || !boardHouseId) {
+      return res.status(401).json("Missing data!");
+    }
+
+    const response = await reqRoomOwnerServices.rejectReq(id, boardHouseId);
 
     return res.status(200).json(response);
   }

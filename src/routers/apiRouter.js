@@ -90,4 +90,10 @@ router.get(
   ApiController.handleGetAllRequest
 );
 
+// accept request
+router.patch("/root/accept-req/:id", ApiController.handleAcceptReq);
+
+// reject request
+router.delete("/root/reject-req/:id", ApiController.handleRejectReq);
+
 export default router;

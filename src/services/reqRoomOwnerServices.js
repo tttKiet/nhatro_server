@@ -1,4 +1,4 @@
-import { ReqRoomOwner, User } from "../app/Models";
+import { BoardHouse, ReqRoomOwner, User } from "../app/Models";
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -91,4 +91,70 @@ const getAllReq = (rootId) => {
   });
 };
 
-export default { createReqRoomOwner, getAllReq };
+const acceptReq = (reqId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(reqId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: "Id not valid",
+        });
+      }
+
+      const reqDoc = await ReqRoomOwner.findByIdAndUpdate(reqId, { status: 1 });
+      if (reqDoc) {
+        // Send notification to user here
+
+        return resolve({
+          err: 0,
+          message: "Accepted request",
+        });
+      }
+      return resolve({
+        err: 2,
+        message: "Something went wrong at acceptReq",
+      });
+    } catch (error) {
+      resolve(error);
+    }
+  });
+};
+
+const rejectReq = (reqId, boardHouseId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(reqId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: "Id not valid",
+        });
+      }
+
+      const boardHouseDoc = await BoardHouse.findOneAndDelete({
+        _id: boardHouseId,
+      });
+      // console.log(boardHouseDoc);
+      if (boardHouseDoc) {
+        // Send notification to user here
+        const reqDoc = await ReqRoomOwner.findByIdAndDelete(reqId);
+        if (reqDoc) {
+          return resolve({
+            err: 0,
+            message: "Deleted request",
+          });
+        }
+      }
+
+      return resolve({
+        err: 2,
+        message: "Something went wrong at rejectReq",
+      });
+    } catch (error) {
+      resolve(error);
+    }
+  });
+};
+
+export default { createReqRoomOwner, getAllReq, acceptReq, rejectReq };
