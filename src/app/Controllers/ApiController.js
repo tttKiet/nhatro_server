@@ -661,6 +661,37 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
+
+  // /posts?page= [Kiet]
+  async handleGetPost(req, res, next) {
+    const { page } = req.query;
+    try {
+      const response = await postServices.getPosts({ page });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  // /users/:_id/posts?index= [Kiet]
+  async handleUserGetPost(req, res, next) {
+    const { index } = req.query;
+    const { _id } = req.params;
+    try {
+      const response = await postServices.getUserPost({ index, _author: _id });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
 }
 
 export default new ApiController();

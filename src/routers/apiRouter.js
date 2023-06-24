@@ -84,6 +84,12 @@ router.post(
   ApiController.handleUpPost
 );
 
+// get all posts
+router.get("/posts", ApiController.handleGetPost);
+
+// get all posts of user
+router.get("/users/:_id/posts", ApiController.handleUserGetPost);
+
 // [upload images cloudinary] [The Van]
 // Upload a image
 router.post("/upload-image", ApiController.handleUploadImage);
