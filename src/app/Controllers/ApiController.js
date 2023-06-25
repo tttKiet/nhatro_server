@@ -679,10 +679,14 @@ class ApiController {
 
   // /users/:_id/posts?index= [Kiet]
   async handleUserGetPost(req, res, next) {
-    const { index } = req.query;
+    const { index, page } = req.query;
     const { _id } = req.params;
     try {
-      const response = await postServices.getUserPost({ index, _author: _id });
+      const response = await postServices.getUserPost({
+        index,
+        _author: _id,
+        page,
+      });
       if (response.err === 0) {
         return res.status(200).json(response);
       } else {

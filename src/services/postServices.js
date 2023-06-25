@@ -79,7 +79,7 @@ const getPosts = ({ page = 1 }) => {
   });
 };
 
-const getUserPost = ({ index, _author }) => {
+const getUserPost = ({ index, _author, page = 1 }) => {
   return new Promise(async (resolve, reject) => {
     try {
       const isValid = ObjectId.isValid(_author);
@@ -89,15 +89,34 @@ const getUserPost = ({ index, _author }) => {
           message: `${_author} Invalid!`,
         });
       }
+
+      let postDoc;
       if (index == 1) {
-        const postDoc = await Post.find()
+        postDoc = await Post.find()
           .populate("user")
           .where({ user: _author })
           .sort({
             createdAt: "desc",
           })
           .limit(1);
-        console.log(postDoc);
+        if (!postDoc) {
+          return resolve({
+            err: 2,
+            message: "Failed to find post!",
+          });
+        }
+      } else {
+        const pageSize = 10;
+        const skip = (page - 1) * pageSize;
+        const postCount = await Post.find({ user: _author }).count();
+        postDoc = await Post.find()
+          .populate("user")
+          .where({ user: _author })
+          .sort({
+            createdAt: "desc",
+          })
+          .skip(skip)
+          .limit(pageSize);
         if (!postDoc) {
           return resolve({
             err: 2,
@@ -107,13 +126,16 @@ const getUserPost = ({ index, _author }) => {
         return resolve({
           err: 0,
           message: "Ok!",
-          data: postDoc,
+          data: {
+            limit: postCount,
+            posts: postDoc,
+          },
         });
       }
-
       return resolve({
-        err: 3,
-        message: "Error",
+        err: 0,
+        message: "Ok!",
+        data: postDoc,
       });
     } catch (err) {
       reject(err);
