@@ -93,6 +93,9 @@ router.get("/users/:_id/posts", ApiController.handleUserGetPost);
 // like post
 router.post("/post/:id/like", ApiController.handleToggleLikePost);
 
+// like post
+router.get("/post/:id/like", ApiController.handleGetLikePost);
+
 // [upload images cloudinary] [The Van]
 // Upload a image
 router.post("/upload-image", ApiController.handleUploadImage);

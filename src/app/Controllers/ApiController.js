@@ -714,6 +714,22 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
+
+  // /post/:id/like [Kiet]
+  async handleGetLikePost(req, res, next) {
+    const { id } = req.params;
+    try {
+      const response = await postServices.getLike({ postId: id });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
 }
 
 export default new ApiController();

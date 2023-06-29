@@ -1,4 +1,4 @@
-import { Post, User } from "../app/Models";
+import { Post, User, Like } from "../app/Models";
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -143,8 +143,36 @@ const getUserPost = ({ index, _author, page = 1 }) => {
   });
 };
 
+const getLike = ({ postId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(postId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `${postId} Invalid!`,
+        });
+      }
+
+      const userLiked = await Like.find({ post: postId }).populate(
+        "user",
+        "_id fullName avatar"
+      );
+
+      return resolve({
+        err: 0,
+        data: userLiked,
+        likedCount: userLiked.length,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 export default {
   createPost,
   getPosts,
   getUserPost,
+  getLike,
 };
