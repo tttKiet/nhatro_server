@@ -8,6 +8,7 @@ import {
   reqRoomOwnerServices,
   feedbackServices,
   postServices,
+  likeServices,
 } from "../../services";
 const cloudinary = require("cloudinary").v2;
 
@@ -693,6 +694,23 @@ class ApiController {
         return res.status(400).json(response);
       }
     } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  // /post/:id/like [Kiet]
+  async handleToggleLikePost(req, res, next) {
+    const { id } = req.params;
+    const { userId } = req.body;
+    try {
+      const response = await likeServices.toggleLike({ userId, postId: id });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
       return res.status(500).json(err);
     }
   }

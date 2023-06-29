@@ -7,3 +7,4 @@ export { default as cloudinaryServices } from "./cloudinaryServices";
 export { default as reqRoomOwnerServices } from "./reqRoomOwnerServices";
 export { default as feedbackServices } from "./feedbackServices";
 export { default as postServices } from "./postServices";
+export { default as likeServices } from "./likeServices";

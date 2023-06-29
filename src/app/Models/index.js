@@ -6,3 +6,4 @@ export { default as Account } from "./Account";
 export { default as Code } from "./Code";
 export { default as ReqRoomOwner } from "./ReqRoomOwner";
 export { default as Post } from "./Post";
+export { default as Like } from "./Like";
