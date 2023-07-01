@@ -6,8 +6,16 @@ import {
   codeServices,
   cloudinaryServices,
   reqRoomOwnerServices,
+  feedbackServices,
+  postServices,
 } from "../../services";
+const cloudinary = require("cloudinary").v2;
 
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 class ApiController {
   // [GET] /api/v1/users/all [Kiet]
   async getAllUsers(req, res, next) {
@@ -507,6 +515,151 @@ class ApiController {
     const response = await reqRoomOwnerServices.getAllReq(id);
 
     return res.status(200).json(response);
+  }
+
+  // [GET] /api/v1/user/:_id/all-request-board-house [Bui Kiet]
+  async handleGetAllRequestUser(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(401).json("Missing data!");
+    }
+
+    try {
+      const response = await reqRoomOwnerServices.getReqOwnerByUserId(_id);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(401).json(response);
+      }
+    } catch (err) {
+      return res.status(401).json("Error from server!");
+    }
+  }
+
+  //[POST] /api/v1/user/feedback/create/:_id ThanThan
+  async handleCreateFeedback(req, res, next) {
+    const { _id } = req.params;
+    const { title, content } = req.body;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+    if (!title || !content) {
+      return res.status(200).json({
+        err: 2,
+        message: "Thiếu nội dung!!",
+      });
+    }
+    try {
+      const response = await feedbackServices.createFeedback(_id, {
+        title,
+        content,
+      });
+      return res.status(200).json(response);
+    } catch (err) {
+      return res.status(401).json(response);
+    }
+
+    // res.status(200).json(FeedBackUser);
+  }
+
+  // [patch] /api/v1/user/feedback/update/:_id [Than]
+
+  async handleUpdateFeedback(req, res, next) {
+    const { _id } = req.params;
+    const { title, content } = req.body;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+    if (!title || !content) {
+      return res.status(200).json({
+        err: 2,
+        message: "Lỗi nội dung rỗng!",
+      });
+    }
+
+    const feedbackDoc = await feedbackServices.updateFeedback(_id, {
+      title,
+      content,
+    });
+    return res.status(200).json(feedbackDoc);
+  }
+
+  // [DELETE] /api/v1/user/feedback/delete/:_id [Than]
+  async handleDeleteFeedback(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+
+    const docUser = await feedbackServices.deleteFeedback(_id);
+    return res.status(200).json(docUser);
+  }
+
+  async getAllFeedbacksById(req, res, next) {
+    const { _id } = req.params;
+    if (!_id) {
+      return res.status(200).json({
+        err: 1,
+        message: "Lỗi không truyền id người dùng!",
+      });
+    }
+
+    const docUser = await feedbackServices.getAllFeedbackByUserId(_id);
+    return res.status(200).json(docUser);
+  }
+
+  // /user/:_id/up-post [Kiet]
+  async handleUpPost(req, res, next) {
+    const { content, hashTag } = req.body;
+    const { _id } = req.params;
+    const files = req.files;
+
+    if (!content || !_id) {
+      if (files.length > 0) {
+        files.forEach((file) => {
+          cloudinary.uploader.destroy(file.filename);
+        });
+      }
+      return res.status(400).json({
+        err: 1,
+        errMessage: "Missing parameters!!",
+      });
+    }
+
+    try {
+      const response = await postServices.createPost({
+        _id,
+        files,
+        hashTag,
+        content,
+      });
+
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
   }
 
   // [PATCH] /api/v1/root/accept-req/:id [The Van]

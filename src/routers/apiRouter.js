@@ -1,6 +1,6 @@
 import express from "express";
 import { ApiController } from "../app/Controllers";
-
+import { cloundinary } from "../middleWares";
 const router = express.Router();
 
 // /api/v1
@@ -41,6 +41,19 @@ router.get("/loggout", ApiController.handleLoggout);
 // test
 router.get("/rooms", ApiController.rooms);
 
+//create a feedback  Than
+router.post("/user/feedback/create/:_id", ApiController.handleCreateFeedback);
+
+//update a feedback  Than
+router.patch("/user/feedback/update/:_id", ApiController.handleUpdateFeedback);
+
+//delete a feedback Than
+router.delete("/user/feedback/delete/:_id", ApiController.handleDeleteFeedback);
+
+//read feedback Than
+
+router.get("/user/feedback/read/:_id", ApiController.getAllFeedbacksById);
+
 // /api/v1 [board-house]
 router.post("/board-house/create", ApiController.handleCreateBoardHouse);
 router.get("/board-house", ApiController.handleGetBoardHouse);
@@ -62,6 +75,13 @@ router.post(
 router.post(
   "/user/verify/email/verify-code",
   ApiController.handleVerifyCodeEmail
+);
+
+// up post
+router.post(
+  "/user/:_id/up-post",
+  cloundinary.array("images"),
+  ApiController.handleUpPost
 );
 
 // [upload images cloudinary] [The Van]
@@ -88,6 +108,12 @@ router.post(
 router.get(
   "/root/all-request-board-house/:id",
   ApiController.handleGetAllRequest
+);
+
+// get request of user
+router.get(
+  "/user/:_id/all-request-board-house",
+  ApiController.handleGetAllRequestUser
 );
 
 // accept request

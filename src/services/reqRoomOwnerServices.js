@@ -91,6 +91,42 @@ const getAllReq = (rootId) => {
   });
 };
 
+const getReqOwnerByUserId = (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(userId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `${_id} User invalid!`,
+        });
+      }
+
+      // Get all req of user
+      const reqOwnerDoc = await ReqRoomOwner.find({ userId }).populate(
+        "boardHouseId"
+      );
+
+      if (reqOwnerDoc) {
+        return resolve({
+          err: 0,
+          message: `Success!`,
+          data: reqOwnerDoc,
+        });
+      } else {
+        return resolve({
+          err: 2,
+          message: `Not found!`,
+          data: reqOwnerDoc,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      reject(error);
+    }
+  });
+};
+
 const acceptReq = (reqId) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -157,4 +193,10 @@ const rejectReq = (reqId, boardHouseId) => {
   });
 };
 
-export default { createReqRoomOwner, getAllReq, acceptReq, rejectReq };
+export default {
+  createReqRoomOwner,
+  getAllReq,
+  getReqOwnerByUserId,
+  acceptReq,
+  rejectReq,
+};

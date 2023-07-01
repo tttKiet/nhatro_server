@@ -116,7 +116,7 @@ const login = ({ email, password }) => {
           avatar: userDoc.avatar,
         };
 
-        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+        jwt.sign(payload, secretKey, { expiresIn: "1d" }, (err, token) => {
           if (err) {
             return resolve({
               err: 1,
@@ -205,7 +205,7 @@ const loginWithSocial = (token) => {
           avatar: userDoc.avatar,
         };
 
-        jwt.sign(payload, secretKey, { expiresIn: "2h" }, (err, token) => {
+        jwt.sign(payload, secretKey, { expiresIn: "1d" }, (err, token) => {
           if (err) {
             return resolve({
               err: 3,
