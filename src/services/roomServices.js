@@ -2,18 +2,18 @@ import { User, BoardHouse, Room } from "../app/Models";
 import { getBoardHouseById } from "./boardHouseServices";
 var ObjectId = require("mongoose").Types.ObjectId;
 
-const createRoom = (id, roomData) => {
+const createRoom = (id, number, size, isLayout, price, description, files) => {
   return new Promise(async (resolve, reject) => {
     try {
       const isValidBoardHouse = ObjectId.isValid(id);
       if (!isValidBoardHouse) {
         return resolve({
           err: 1,
-          message: "Id không đúng định dạng!",
+          message: "Id not valid!",
         });
       }
 
-      const { number, size, isLayout, price, description, images } = roomData;
+      const paths = files.map((f) => f.path);
 
       let convertIsLayout = false;
       if (isLayout === "Yes") {
@@ -21,12 +21,12 @@ const createRoom = (id, roomData) => {
       }
 
       const roomDoc = await Room.create({
-        number,
-        size,
+        number: number,
+        size: size,
         isLayout: convertIsLayout,
-        price,
-        description,
-        images,
+        price: price,
+        description: description,
+        images: paths,
         boardHouseId: id,
       });
       const populatedRoomDoc = await Room.findById(roomDoc._id).populate(
@@ -159,18 +159,44 @@ const updateRoom = (id, roomData) => {
       if (!isValidId) {
         return resolve({
           err: 1,
-          message: "Id không đúng định dạng",
+          message: "Id not valid",
         });
       }
 
-      const { number, size, isLayout, price, description, images } = roomData;
-      console.log("fsdfsd", id);
+      const {
+        number,
+        size,
+        isLayout,
+        price,
+        description,
+        arrImgToDelete,
+        files,
+      } = roomData;
+
       let convertIsLayout = false;
       if (isLayout === "Yes") {
         convertIsLayout = true;
       }
 
-      const roomDoc = await Room.findOneAndUpdate(
+      const paths = files.map((f) => f.path);
+
+      const roomDoc = await Room.findById(id);
+
+      let imageToUpdate = roomDoc.images;
+
+      if (arrImgToDelete.length > 0) {
+        imageToUpdate = roomDoc.images.filter(
+          (img) => !arrImgToDelete.includes(img)
+        );
+      }
+
+      // const imageToUpdate = roomDoc.images.filter(
+      //   (img) => !arrImgToDelete.includes(img)
+      // );
+
+      const combinedImgs = imageToUpdate.concat(paths);
+
+      const roomDocUpdate = await Room.findOneAndUpdate(
         { _id: id },
         {
           number: number,
@@ -178,20 +204,20 @@ const updateRoom = (id, roomData) => {
           isLayout: convertIsLayout,
           price: price,
           description: description,
-          images: images,
+          images: combinedImgs,
         }
       );
 
-      if (roomDoc) {
+      if (roomDocUpdate) {
         return resolve({
           err: 0,
-          message: "Cập nhật phòng trọ thành công",
+          message: "Update room successfully",
         });
       }
 
       return resolve({
         err: 2,
-        message: "Không tìm thấy phòng muốn cập nhật",
+        message: "Something went wrong at updateRoom!",
       });
     } catch (error) {
       reject(error);

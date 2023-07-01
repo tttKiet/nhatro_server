@@ -102,47 +102,58 @@ const createBoardHouseFromReq = ({
 };
 
 const updateBoardHouse = (
-  adminId,
-  boardHouseId,
-  { name, address, phone, electricPrice, waterPrice, images }
+  id,
+  { name, address, phone, electricPrice, waterPrice, arrImgToDelete, files }
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const isValidAdmin = ObjectId.isValid(adminId);
-      const isValidBoardHouse = ObjectId.isValid(boardHouseId);
-      if (!isValidAdmin || !isValidBoardHouse) {
+      const isValidBoardHouse = ObjectId.isValid(id);
+      if (!isValidBoardHouse) {
         return resolve({
           err: 1,
-          message: "Id không đúng định dạng",
+          message: "Id not valid",
         });
       }
 
-      const adminDoc = await User.findById(adminId);
+      const paths = files.map((f) => f.path);
 
-      if (!adminDoc || adminDoc.type !== "admin") {
-        return resolve({
-          err: 2,
-          message: `${adminId}: Bạn không phải là admin`,
-        });
+      const boardHouseDoc = await BoardHouse.findById(id);
+
+      let imageToUpdate = boardHouseDoc.images;
+
+      if (arrImgToDelete.length > 0) {
+        imageToUpdate = boardHouseDoc.images.filter(
+          (img) => !arrImgToDelete.includes(img)
+        );
       }
 
-      const boardHouseDoc = await BoardHouse.findOneAndUpdate(
-        { _id: boardHouseId, userId: adminId },
-        { name, address, phone, electricPrice, waterPrice, images }
+      const combinedImgs = imageToUpdate.concat(paths);
+
+      const boardHouseDocUpdate = await BoardHouse.findOneAndUpdate(
+        { _id: id },
+        {
+          name: name,
+          address: address,
+          phone: phone,
+          electricPrice: electricPrice,
+          waterPrice: waterPrice,
+          images: combinedImgs,
+        }
       );
 
-      if (boardHouseDoc) {
+      if (boardHouseDocUpdate) {
         return resolve({
           err: 0,
-          message: "Cập nhật dãy trọ thành công",
+          message: "Update board house successfully",
         });
       }
 
       return resolve({
-        err: 3,
-        message: "Không tìm thấy dãy trọ mà bạn muốn cập nhật",
+        err: 2,
+        message: "Some thing went wrong at updateBoardHouse",
       });
     } catch (error) {
+      console.log("err", error);
       reject(error);
     }
   });
