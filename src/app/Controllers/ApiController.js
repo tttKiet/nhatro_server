@@ -4,10 +4,12 @@ import {
   roomServices,
   emailServices,
   codeServices,
+  commentServices,
   cloudinaryServices,
   reqRoomOwnerServices,
   feedbackServices,
   postServices,
+  likeServices,
 } from "../../services";
 const cloudinary = require("cloudinary").v2;
 
@@ -749,6 +751,100 @@ class ApiController {
     const response = await reqRoomOwnerServices.rejectReq(id, boardHouseId);
 
     return res.status(200).json(response);
+  }
+
+  // /posts?page= [Kiet]
+  async handleGetPost(req, res, next) {
+    const { page } = req.query;
+    try {
+      const response = await postServices.getPosts({ page });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  // /users/:_id/posts?index= [Kiet]
+  async handleUserGetPost(req, res, next) {
+    const { index, page } = req.query;
+    const { _id } = req.params;
+    try {
+      const response = await postServices.getUserPost({
+        index,
+        _author: _id,
+        page,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  // /post/:id/like [Kiet]
+  async handleToggleLikePost(req, res, next) {
+    const { id } = req.params;
+    const { userId } = req.body;
+    try {
+      const response = await likeServices.toggleLike({ userId, postId: id });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /post/:id/like [Kiet]
+  async handleGetLikePost(req, res, next) {
+    const { id } = req.params;
+    try {
+      const response = await postServices.getLike({ postId: id });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /comment [Kiet]
+  async handleComment(req, res, next) {
+    const { content, userId, postId, parentId } = req.body;
+
+    if (!content || !userId || !postId) {
+      return res.status(404).json({ message: "Missing input!" });
+    }
+
+    try {
+      const response = await commentServices.createCmt({
+        content,
+        userId,
+        postId,
+        parentId,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
   }
 }
 
