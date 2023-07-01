@@ -604,30 +604,30 @@ class ApiController {
   //[POST] /api/v1/user/feedback/create/:_id ThanThan
   async handleCreateFeedback(req, res, next) {
     const { _id } = req.params;
-    const { title, content } = req.body;
+    const data = req.body;
+
+    const { title, message } = data;
     if (!_id) {
-      return res.status(200).json({
+      return res.status(400).json({
         err: 1,
-        message: "Lỗi không truyền id người dùng!",
+        message: "Missing id!",
       });
     }
-    if (!title || !content) {
-      return res.status(200).json({
+    if (!title || !message) {
+      return res.status(400).json({
         err: 2,
-        message: "Thiếu nội dung!!",
+        message: "Missing data",
       });
     }
     try {
       const response = await feedbackServices.createFeedback(_id, {
         title,
-        content,
+        message,
       });
       return res.status(200).json(response);
     } catch (err) {
-      return res.status(401).json(response);
+      return res.status(401).json(err);
     }
-
-    // res.status(200).json(FeedBackUser);
   }
 
   // [patch] /api/v1/user/feedback/update/:_id [Than]
