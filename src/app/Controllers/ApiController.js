@@ -192,39 +192,58 @@ class ApiController {
     return res.status(200).json(response);
   }
 
-  // [PATCH] /api/v1/board-house/update?adminId= & boardHouseId= [The Van]
+  // [PATCH] /api/v1/board-house/update/:id[The Van]
   async handleUpdateBoardHouse(req, res, next) {
-    const { adminId, boardHouseId } = req.query;
-    const { name, address, phone, electricPrice, waterPrice, images } =
+    const { id } = req.params;
+    const { name, address, phone, electricPrice, waterPrice, imgToDelete } =
       req.body;
+    const files = req.files;
 
-    if (!adminId || !boardHouseId) {
-      return res.status(200).json({
+    if (!name || !address || !phone || !electricPrice || !waterPrice) {
+      return res.status(400).json({
         err: 1,
-        message: "Thiếu id",
+        message: "Missing data",
       });
     }
 
-    if (
-      !name ||
-      !address ||
-      !phone ||
-      !electricPrice ||
-      !waterPrice ||
-      !images
-    ) {
-      return res.status(200).json({
-        err: 2,
-        message: "Thiếu dữ liệu nhập vào",
-      });
+    // delete img on cloudinary
+    let arrImgToDelete = [];
+    if (imgToDelete.length > 0) {
+      arrImgToDelete = imgToDelete.split(",");
+    }
+    if (arrImgToDelete && arrImgToDelete.length > 0) {
+      try {
+        await Promise.all(
+          arrImgToDelete.map(async (img) => {
+            const path = img.slice(
+              img.indexOf("/motel_posts/") + 1,
+              img.lastIndexOf(".")
+            );
+            console.log("path: ", path);
+
+            await cloudinary.uploader.destroy(path);
+          })
+        );
+      } catch (error) {
+        console.log("loi", error);
+      }
     }
 
-    const response = await boardHouseServices.updateBoardHouse(
-      adminId,
-      boardHouseId,
-      { name, address, phone, electricPrice, waterPrice, images }
-    );
-    return res.status(200).json(response);
+    try {
+      const response = await boardHouseServices.updateBoardHouse(id, {
+        name,
+        address,
+        phone,
+        electricPrice,
+        waterPrice,
+        arrImgToDelete,
+        files,
+      });
+
+      return res.status(200).json(response);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   // [DELETE] /api/v1/board-house/delete/:_id?adminId= & rootId= [The Van]
@@ -263,24 +282,41 @@ class ApiController {
   // [POST] /api/v1/board-house/room/create/:id [The Van]
   async handleCreateRoom(req, res, next) {
     const { id } = req.params;
-
-    const { number, size, isLayout, price, description, images } = req.body;
+    const { number, size, isLayout, price, description } = req.body;
+    const files = req.files;
 
     if (!number || !size || !price || !isLayout || !description) {
-      return res.status(200).json({
+      return res.status(400).json({
         err: 1,
-        message: "Thiếu dữ liệu",
+        message: "Missing data",
       });
     }
-    const response = await roomServices.createRoom(id, {
-      number,
-      size,
-      isLayout,
-      price,
-      description,
-      images,
-    });
-    return res.status(200).json(response);
+
+    try {
+      const response = await roomServices.createRoom(
+        id,
+        number,
+        size,
+        isLayout,
+        price,
+        description,
+        files
+      );
+
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json(error);
+    }
   }
 
   // [GET] /api/v1/board-house/room? adminId= [The Van]
@@ -312,13 +348,38 @@ class ApiController {
   // [PATCH] /api/v1/board-house/room/update/:id [The Van]
   async handleUpdateRoom(req, res, next) {
     const { id } = req.params;
-    const { number, size, isLayout, price, description, images } = req.body;
+    const { number, size, isLayout, price, description, imgToDelete } =
+      req.body;
+    const files = req.files;
 
     if (!number || !size || !price || !isLayout || !description) {
-      return res.status(200).json({
+      return res.status(400).json({
         err: 1,
-        message: "Thiếu dữ liệu",
+        message: "Missing data",
       });
+    }
+
+    // delete img on cloudinary
+    let arrImgToDelete = [];
+    if (imgToDelete.length > 0) {
+      arrImgToDelete = imgToDelete.split(",");
+    }
+    if (arrImgToDelete && arrImgToDelete.length > 0) {
+      try {
+        await Promise.all(
+          arrImgToDelete.map(async (img) => {
+            const path = img.slice(
+              img.indexOf("/motel_posts/") + 1,
+              img.lastIndexOf(".")
+            );
+            console.log("path: ", path);
+
+            await cloudinary.uploader.destroy(path);
+          })
+        );
+      } catch (error) {
+        console.log("loi", error);
+      }
     }
 
     const response = await roomServices.updateRoom(id, {
@@ -327,7 +388,8 @@ class ApiController {
       isLayout,
       price,
       description,
-      images,
+      arrImgToDelete,
+      files,
     });
 
     return res.status(200).json(response);
