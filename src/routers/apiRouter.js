@@ -38,6 +38,13 @@ router.get("/permissions/user/:_id", ApiController.handlePermissionsUser);
 // loggout
 router.get("/loggout", ApiController.handleLoggout);
 
+// user upload avatar
+router.patch(
+  "/user/change-avatar",
+  cloundinary.array("images"),
+  ApiController.handleChangeAvatar
+);
+
 // test
 router.get("/rooms", ApiController.rooms);
 

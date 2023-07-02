@@ -609,6 +609,35 @@ const sendCodeEmail = async (email, userId) => {
   });
 };
 
+const changeAvatar = async (userId, img) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(userId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `UserId not valid`,
+        });
+      }
+
+      const userDoc = await User.findByIdAndUpdate(userId, { avatar: img });
+      if (userDoc) {
+        return resolve({
+          err: 0,
+          message: `Change avatar successfuly`,
+        });
+      }
+
+      return resolve({
+        err: 2,
+        message: `Something went wrong at changeAvatar`,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   createUser,
   login,
@@ -622,4 +651,5 @@ export default {
   updateInfoUser,
   sendCodeEmail,
   verifyTokenEmail,
+  changeAvatar,
 };

@@ -380,7 +380,7 @@ class ApiController {
           })
         );
       } catch (error) {
-        console.log("loi", error);
+        console.log("error", error);
       }
     }
 
@@ -751,6 +751,44 @@ class ApiController {
     const response = await reqRoomOwnerServices.rejectReq(id, boardHouseId);
 
     return res.status(200).json(response);
+  }
+
+  // [POST] /api/v1/user/change-avatar" [The Van]
+  async handleChangeAvatar(req, res, next) {
+    const { id, imgToDelete } = req.body;
+    const files = req.files;
+
+    if (!id || !imgToDelete || !files) {
+      return res.status(400).json({
+        err: 1,
+        errMessage: "Missing data!!",
+      });
+    }
+
+    // delete img
+    if (imgToDelete.length > 0) {
+      const path = imgToDelete.slice(
+        imgToDelete.indexOf("/motel_posts/") + 1,
+        imgToDelete.lastIndexOf(".")
+      );
+      console.log(path);
+      try {
+        await cloudinary.uploader.destroy(path);
+      } catch (error) {
+        console.log("error", error);
+      }
+    }
+
+    try {
+      const response = await userServices.changeAvatar(id, files[0].path);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
 
   // /posts?page= [Kiet]
