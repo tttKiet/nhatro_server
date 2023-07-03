@@ -99,17 +99,23 @@ router.post(
 // get all posts
 router.get("/posts", ApiController.handleGetPost);
 
+// get comment post
+router.get("/post/:id/comment", ApiController.handleGetComment);
+
 // get all posts of user
 router.get("/users/:_id/posts", ApiController.handleUserGetPost);
 
 // like post
 router.post("/post/:id/like", ApiController.handleToggleLikePost);
 
-// like post
+// get like post
 router.get("/post/:id/like", ApiController.handleGetLikePost);
 
 // comment
 router.post("/comment", ApiController.handleComment);
+
+// comment
+router.get("/comment/:id/child", ApiController.handleGetChildComment);
 
 // [upload images cloudinary] [The Van]
 // Upload a image

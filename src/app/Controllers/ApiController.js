@@ -825,7 +825,7 @@ class ApiController {
   async handleComment(req, res, next) {
     const { content, userId, postId, parentId } = req.body;
 
-    if (!content || !userId || !postId) {
+    if (!content || !userId || (!postId && !parentId)) {
       return res.status(404).json({ message: "Missing input!" });
     }
 
@@ -835,6 +835,46 @@ class ApiController {
         userId,
         postId,
         parentId,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /post/:id/comment [Kiet]
+  async handleGetComment(req, res, next) {
+    const { page } = req.query;
+    const { id } = req.params;
+
+    try {
+      const response = await commentServices.getCommentPost(id, page);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /comment/:id/child [Kiet]
+  async handleGetChildComment(req, res, next) {
+    const { page, type } = req.query;
+    const { id } = req.params;
+
+    try {
+      const response = await commentServices.getChildCommentById({
+        id,
+        page,
+        type,
       });
       if (response.err === 0) {
         return res.status(200).json(response);
