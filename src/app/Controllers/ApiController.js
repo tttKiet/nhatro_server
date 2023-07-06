@@ -10,6 +10,7 @@ import {
   feedbackServices,
   postServices,
   likeServices,
+  favouritePostServices,
 } from "../../services";
 const cloudinary = require("cloudinary").v2;
 
@@ -882,6 +883,68 @@ class ApiController {
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
+    }
+  }
+
+  // [POST] "/user/:_id/add-favourite-post?postId=" [The Van]
+  async handleAddFavouritePost(req, res, next) {
+    const { postId } = req.query;
+    const { _id } = req.params;
+
+    if (!postId || !_id) {
+      return res.status(400).json({ message: "Missing id!" });
+    }
+
+    try {
+      const response = await favouritePostServices.createFavouritePost(
+        postId,
+        _id
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [GET] "/user/:_id/favourite-post" [The Van]
+  async handleGetFavouritePost(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(400).json({ message: "Missing id!" });
+    }
+
+    try {
+      const response = await favouritePostServices.getFavouritePost(_id);
+
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [DELETE] "/user/:_id/remove-favourite-post?fvPostId=" [The Van]
+  async handleRemoveFavouritePost(req, res, next) {
+    const { _id } = req.params;
+    const { fvPostId } = req.query;
+
+    if (!_id || !fvPostId) {
+      return res.status(400).json({ message: "Missing id!" });
+    }
+
+    try {
+      const response = await favouritePostServices.removeFavouritePost(
+        _id,
+        fvPostId
+      );
+
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
     }
   }
 }

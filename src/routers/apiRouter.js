@@ -118,19 +118,6 @@ router.get("/post/:id/like", ApiController.handleGetLikePost);
 // comment
 router.post("/comment", ApiController.handleComment);
 
-// [upload images cloudinary] [The Van]
-// Upload a image
-router.post("/upload-image", ApiController.handleUploadImage);
-
-// Upload images
-router.post("/upload-images", ApiController.handleUploadImages);
-
-// Delete image
-router.delete("/delete-image", ApiController.handleDeleteImage);
-
-// Delete images
-router.delete("/delete-images", ApiController.handleDeleteImages);
-
 // Create request room owner [The Van]
 // create request
 router.post(
@@ -155,5 +142,21 @@ router.patch("/root/accept-req/:id", ApiController.handleAcceptReq);
 
 // reject request
 router.delete("/root/reject-req/:id", ApiController.handleRejectReq);
+
+// Favourite post [The Van]
+// add
+router.post(
+  "/user/:_id/add-favourite-post",
+  ApiController.handleAddFavouritePost
+);
+
+// get
+router.get("/user/:_id/favourite-post", ApiController.handleGetFavouritePost);
+
+// remove
+router.delete(
+  "/user/:_id/remove-favourite-post",
+  ApiController.handleRemoveFavouritePost
+);
 
 export default router;
