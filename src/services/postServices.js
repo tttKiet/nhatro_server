@@ -79,6 +79,39 @@ const getPosts = ({ page = 1 }) => {
   });
 };
 
+const getPostById = ({ postId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(postId);
+      if (!isValid) {
+        return resolve({
+          err: 2,
+          message: `${postId} Invalid!`,
+        });
+      }
+
+      const postDoc = await Post.findById(postId).populate(
+        "user",
+        "_id fullName avatar"
+      );
+
+      if (!postDoc) {
+        return resolve({
+          err: 1,
+          message: "Post is not found!",
+        });
+      }
+      return resolve({
+        err: 0,
+        message: "Ok!",
+        data: postDoc,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 const getUserPost = ({ index, _author, page = 1 }) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -175,4 +208,5 @@ export default {
   getPosts,
   getUserPost,
   getLike,
+  getPostById,
 };

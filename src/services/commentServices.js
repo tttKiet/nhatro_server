@@ -114,14 +114,13 @@ const getCommentPost = (postId, page = 1) => {
               ...item,
               child: {
                 count: commentChild[index].length,
-                comment: commentChild[index].slice(0, 3),
+                comment: commentChild[index],
               },
             };
           });
           // console.log(commentChild);
 
           const maxCmt = commentChild.reduce((init, value) => {
-            console.log(value);
             return init + value.length;
           }, cmtCount);
 
@@ -130,7 +129,7 @@ const getCommentPost = (postId, page = 1) => {
             message: `OK!`,
             data: data,
             count: cmtCount,
-            maxCmt: maxCmt,
+            maxCmtPage: maxCmt,
           });
         })
         .catch((err) => {
@@ -215,4 +214,54 @@ const getChildCommentById = async ({ id, page, type }) => {
   });
 };
 
-export default { createCmt, getCommentPost, getChildCommentById };
+const getLimitComments = async ({ postId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(postId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `Id input invalid!`,
+        });
+      }
+      const cmtCount = await Comment.find({ post: postId }).count();
+      const cmtDoc = await Comment.find({ post: postId }).lean();
+
+      if (!cmtDoc) {
+        return resolve({
+          err: 2,
+          message: "Failed to find cmt!",
+        });
+      }
+
+      const cmts = cmtDoc.map((cmt) => {
+        return getChildComments(cmt._id);
+      });
+
+      Promise.all(cmts)
+        .then((commentChild) => {
+          const maxCmt = commentChild.reduce((init, value) => {
+            return init + value.length || init;
+          }, cmtCount);
+
+          return resolve({
+            err: 0,
+            message: `OK!`,
+            countCmt: maxCmt,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+export default {
+  createCmt,
+  getCommentPost,
+  getChildCommentById,
+  getLimitComments,
+};

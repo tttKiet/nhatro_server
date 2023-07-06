@@ -886,6 +886,44 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
+
+  // /comment/:id/child [Kiet]
+  async handleGetLimitComment(req, res, next) {
+    const { postId } = req.query;
+
+    try {
+      const response = await commentServices.getLimitComments({
+        postId,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /post/:_id [Kiet]
+  async handleGetPostById(req, res, next) {
+    const { _id } = req.params;
+
+    try {
+      const response = await postServices.getPostById({
+        postId: _id,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
 }
 
 export default new ApiController();
