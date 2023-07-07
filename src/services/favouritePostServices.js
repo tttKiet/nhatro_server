@@ -90,7 +90,7 @@ const removeFavouritePost = (userId, fvId) => {
 
       return resolve({
         err: 1,
-        message: "Something went wrong at removeFavouritePost!",
+        message: "This favourite post was deleted",
       });
     } catch (error) {
       reject(error);

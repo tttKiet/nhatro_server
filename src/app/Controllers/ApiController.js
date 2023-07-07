@@ -671,17 +671,22 @@ class ApiController {
     return res.status(200).json(docUser);
   }
 
+  // [GET] /user/:_id/all-feedbacks
+
   async getAllFeedbacksById(req, res, next) {
     const { _id } = req.params;
     if (!_id) {
-      return res.status(200).json({
+      return res.status(400).json({
         err: 1,
-        message: "Lỗi không truyền id người dùng!",
+        message: "Missing Id!",
       });
     }
-
-    const docUser = await feedbackServices.getAllFeedbackByUserId(_id);
-    return res.status(200).json(docUser);
+    try {
+      const response = await feedbackServices.getAllFeedbackByUserId(_id);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
 
   // /user/:_id/up-post [Kiet]

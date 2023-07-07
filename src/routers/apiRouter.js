@@ -57,9 +57,9 @@ router.patch("/user/feedback/update/:_id", ApiController.handleUpdateFeedback);
 //delete a feedback Than
 router.delete("/user/feedback/delete/:_id", ApiController.handleDeleteFeedback);
 
-//read feedback Than
+//get feedback
 
-router.get("/user/feedback/read/:_id", ApiController.getAllFeedbacksById);
+router.get("/user/:_id/all-feedbacks", ApiController.getAllFeedbacksById);
 
 // /api/v1 [board-house]
 router.post("/board-house/create", ApiController.handleCreateBoardHouse);

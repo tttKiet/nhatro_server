@@ -31,25 +31,24 @@ const createFeedback = (id, data) => {
 const getAllFeedbackByUserId = (id) => {
   return new Promise(async (resolve, reject) => {
     try {
-      //Ktra ID hop le hay khong
       const isValid = ObjectId.isValid(id);
       if (!isValid) {
         resolve({
           err: 1,
-          message: `ID k hop le !!!`,
+          message: `Id not valid`,
         });
       }
       const feedbackDoc = await Feedback.find({ userId: id });
       if (feedbackDoc) {
         resolve({
           err: 0,
-          message: "da tim thay!",
+          message: "Success!",
           data: feedbackDoc,
         });
       }
       resolve({
         err: 2,
-        message: `loi roi`,
+        message: `Something went wrong at getAllFeedbackByUserId`,
       });
     } catch (error) {
       reject(error);
