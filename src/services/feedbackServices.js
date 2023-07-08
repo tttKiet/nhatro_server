@@ -92,29 +92,31 @@ const updateFeedback = (_id, { title, content }) => {
   });
 };
 
-const deleteFeedback = async (_id) => {
+const deleteFeedback = async (_id, userId) => {
   return new Promise(async (resolve, reject) => {
     try {
       const isValid = ObjectId.isValid(_id);
       if (!isValid) {
         return resolve({
           err: 3,
-          message: `${_id} không phải là id đúng định dạng!`,
+          message: `${_id} is not valid!`,
         });
       }
-      const feedback = await Feedback.deleteOne({ _id });
+      const feedback = await Feedback.findOneAndDelete({
+        _id: _id,
+        userId: userId,
+      });
       if (feedback)
         return resolve({
           err: 0,
-          message: `Xóa feedback thành công!`,
+          message: `Delete feedback successfully`,
           dataFeedback: feedback,
         });
-      else {
-        resolve({
-          err: 2,
-          message: `Không tìm thấy thông tin người dùng ${_id}!`,
-        });
-      }
+
+      resolve({
+        err: 2,
+        message: `This feedback was deleted`,
+      });
     } catch (error) {
       reject(error);
     }

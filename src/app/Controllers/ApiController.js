@@ -656,19 +656,23 @@ class ApiController {
     return res.status(200).json(feedbackDoc);
   }
 
-  // [DELETE] /api/v1/user/feedback/delete/:_id [Than]
+  // [DELETE] /user/:_id/delete-feedback?fbId=
   async handleDeleteFeedback(req, res, next) {
     const { _id } = req.params;
+    const { fbId } = req.query;
 
-    if (!_id) {
-      return res.status(200).json({
+    if (!_id || !fbId) {
+      return res.status(400).json({
         err: 1,
-        message: "Lỗi không truyền id người dùng!",
+        message: "Missing id",
       });
     }
-
-    const docUser = await feedbackServices.deleteFeedback(_id);
-    return res.status(200).json(docUser);
+    try {
+      const response = await feedbackServices.deleteFeedback(fbId, _id);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
 
   // [GET] /user/:_id/all-feedbacks

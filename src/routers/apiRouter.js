@@ -54,8 +54,8 @@ router.post("/user/feedback/create/:_id", ApiController.handleCreateFeedback);
 //update a feedback  Than
 router.patch("/user/feedback/update/:_id", ApiController.handleUpdateFeedback);
 
-//delete a feedback Than
-router.delete("/user/feedback/delete/:_id", ApiController.handleDeleteFeedback);
+//delete a feedback
+router.delete("/user/:_id/delete-feedback", ApiController.handleDeleteFeedback);
 
 //get feedback
 
