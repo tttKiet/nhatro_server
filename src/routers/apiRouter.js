@@ -104,11 +104,15 @@ router.post(
   ApiController.handleUpPost
 );
 
+// update post
 router.patch(
   "/user/:_id/edit-post",
   cloundinary.array("images"),
   ApiController.handleEditPost
 );
+
+// get delete post by id
+router.delete("/post/:_id", ApiController.handleDeletePostById);
 
 // get all posts
 router.get("/posts", ApiController.handleGetPost);

@@ -1078,6 +1078,25 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
+
+  // /post/:_id [Kiet]
+  async handleDeletePostById(req, res, next) {
+    const { _id } = req.params;
+
+    try {
+      const response = await postServices.deletePostById({
+        postId: _id,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
 }
 
 export default new ApiController();

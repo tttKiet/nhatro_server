@@ -285,6 +285,48 @@ const getLike = ({ postId }) => {
   });
 };
 
+const deletePostById = ({ postId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(postId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `${postId} Invalid!`,
+        });
+      }
+
+      const postDoc = await Post.findByIdAndDelete({ _id: postId });
+
+      const oldImages = postDoc?.images;
+      if (oldImages?.length > 0) {
+        oldImages.forEach((file) => {
+          // Lay ten anh
+          const strArr = file.split("/");
+          const strSplipDot = strArr[strArr.length - 1].split(".");
+          const nameImg = "motel_posts/" + strSplipDot[0];
+
+          cloudinary.uploader.destroy(nameImg);
+        });
+      }
+
+      if (!postDoc) {
+        return resolve({
+          err: 2,
+          message: `${postId} is not found!`,
+        });
+      }
+
+      return resolve({
+        err: 0,
+        message: "Ok!",
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 export default {
   createPost,
   getPosts,
@@ -292,4 +334,5 @@ export default {
   getLike,
   getPostById,
   editPost,
+  deletePostById,
 };
