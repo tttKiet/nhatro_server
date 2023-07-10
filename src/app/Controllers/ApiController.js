@@ -726,6 +726,50 @@ class ApiController {
     }
   }
 
+  // /user/:_id/edit-post [Kiet]
+  async handleEditPost(req, res, next) {
+    const { content, hashTag, postId } = req.body;
+    const { _id } = req.params;
+    const files = req.files;
+    console.log("postId ", postId);
+    if (!content || !_id || !postId) {
+      if (files?.length > 0) {
+        files.forEach((file) => {
+          cloudinary.uploader.destroy(file.filename);
+        });
+      }
+      return res.status(400).json({
+        err: 1,
+        errMessage: "Missing parameters!!",
+      });
+    }
+
+    try {
+      const response = await postServices.editPost({
+        _id,
+        files,
+        postId,
+        hashTag,
+        content,
+      });
+
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
   // [PATCH] /api/v1/root/accept-req/:id [The Van]
   async handleAcceptReq(req, res, next) {
     const { id } = req.params;

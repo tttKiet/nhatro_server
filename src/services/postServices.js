@@ -1,4 +1,11 @@
 import { Post, User, Like } from "../app/Models";
+const cloudinary = require("cloudinary").v2;
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -47,6 +54,82 @@ const createPost = ({ _id, files, hashTag, content }) => {
   });
 };
 
+const editPost = ({ _id, files, hashTag, content, postId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let isValid = ObjectId.isValid(_id);
+      if (!isValid) {
+        return resolve({
+          err: 2,
+          message: `${_id} Invalid!`,
+        });
+      }
+
+      isValid = ObjectId.isValid(postId);
+      if (!isValid) {
+        return resolve({
+          err: 2,
+          message: `Post Id: ${postId} Invalid!`,
+        });
+      }
+
+      const author = await User.findById({ _id });
+      if (!author) {
+        return resolve({
+          err: 4,
+          message: `Author not found!`,
+        });
+      }
+
+      const paths = files.map((f) => f.path);
+      const postDocExist = await Post.findById(postId).lean();
+      if (!postDocExist) {
+        return resolve({
+          err: 5,
+          message: `${_id} Post not found!`,
+        });
+      }
+      const oldImages = postDocExist?.images;
+      if (oldImages?.length > 0) {
+        oldImages.forEach((file) => {
+          // Lay ten anh
+          const strArr = file.split("/");
+          const strSplipDot = strArr[strArr.length - 1].split(".");
+          const nameImg = "motel_posts/" + strSplipDot[0];
+
+          cloudinary.uploader.destroy(nameImg);
+        });
+      }
+
+      const postDoc = await Post.updateOne(
+        { _id: postId },
+        {
+          content,
+          images: paths,
+          hashTag: hashTag ? hashTag : undefined,
+        }
+      );
+
+      const post = await Post.findById(postId).populate("user");
+
+      if (!postDoc) {
+        return resolve({
+          err: 3,
+          message: `Error updating post!`,
+        });
+      } else {
+        return resolve({
+          err: 0,
+          message: `Updated post!`,
+          postDoc: post,
+        });
+      }
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 const getPosts = ({ page = 1 }) => {
   const pageSize = 10;
   return new Promise(async (resolve, reject) => {
@@ -58,7 +141,6 @@ const getPosts = ({ page = 1 }) => {
         .sort({
           createdAt: "desc",
         })
-
         .skip(skip)
         .limit(pageSize);
 
@@ -209,4 +291,5 @@ export default {
   getUserPost,
   getLike,
   getPostById,
+  editPost,
 };

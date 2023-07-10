@@ -1,6 +1,7 @@
 import express from "express";
 import { ApiController } from "../app/Controllers";
 import { cloundinary } from "../middleWares";
+
 const router = express.Router();
 
 // /api/v1
@@ -94,6 +95,12 @@ router.post(
   "/user/:_id/up-post",
   cloundinary.array("images"),
   ApiController.handleUpPost
+);
+
+router.patch(
+  "/user/:_id/edit-post",
+  cloundinary.array("images"),
+  ApiController.handleEditPost
 );
 
 // get all posts
