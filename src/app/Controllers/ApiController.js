@@ -913,6 +913,24 @@ class ApiController {
     }
   }
 
+  // /post/:id/comment [Kiet]
+  async handleGetComment(req, res, next) {
+    const { page } = req.query;
+    const { id } = req.params;
+
+    try {
+      const response = await commentServices.getCommentPost(id, page);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
   // /comment [Kiet]
   async handleComment(req, res, next) {
     const { content, userId, postId, parentId } = req.body;
@@ -998,12 +1016,6 @@ class ApiController {
       return res.status(200).json(response);
     } catch (error) {
       return res.status(500).json(error);
-    }
-  }
-
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json(err);
     }
   }
 
