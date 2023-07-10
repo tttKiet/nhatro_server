@@ -10,6 +10,7 @@ import {
   feedbackServices,
   postServices,
   likeServices,
+  favouritePostServices,
 } from "../../services";
 const cloudinary = require("cloudinary").v2;
 
@@ -380,7 +381,7 @@ class ApiController {
           })
         );
       } catch (error) {
-        console.log("loi", error);
+        console.log("error", error);
       }
     }
 
@@ -604,30 +605,30 @@ class ApiController {
   //[POST] /api/v1/user/feedback/create/:_id ThanThan
   async handleCreateFeedback(req, res, next) {
     const { _id } = req.params;
-    const { title, content } = req.body;
+    const data = req.body;
+
+    const { title, message } = data;
     if (!_id) {
-      return res.status(200).json({
+      return res.status(400).json({
         err: 1,
-        message: "Lỗi không truyền id người dùng!",
+        message: "Missing id!",
       });
     }
-    if (!title || !content) {
-      return res.status(200).json({
+    if (!title || !message) {
+      return res.status(400).json({
         err: 2,
-        message: "Thiếu nội dung!!",
+        message: "Missing data",
       });
     }
     try {
       const response = await feedbackServices.createFeedback(_id, {
         title,
-        content,
+        message,
       });
       return res.status(200).json(response);
     } catch (err) {
-      return res.status(401).json(response);
+      return res.status(401).json(err);
     }
-
-    // res.status(200).json(FeedBackUser);
   }
 
   // [patch] /api/v1/user/feedback/update/:_id [Than]
@@ -655,32 +656,41 @@ class ApiController {
     return res.status(200).json(feedbackDoc);
   }
 
-  // [DELETE] /api/v1/user/feedback/delete/:_id [Than]
+  // [DELETE] /user/:_id/delete-feedback?fbId=
   async handleDeleteFeedback(req, res, next) {
     const { _id } = req.params;
+    const { fbId } = req.query;
 
-    if (!_id) {
-      return res.status(200).json({
+    if (!_id || !fbId) {
+      return res.status(400).json({
         err: 1,
-        message: "Lỗi không truyền id người dùng!",
+        message: "Missing id",
       });
     }
-
-    const docUser = await feedbackServices.deleteFeedback(_id);
-    return res.status(200).json(docUser);
+    try {
+      const response = await feedbackServices.deleteFeedback(fbId, _id);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
+
+  // [GET] /user/:_id/all-feedbacks
 
   async getAllFeedbacksById(req, res, next) {
     const { _id } = req.params;
     if (!_id) {
-      return res.status(200).json({
+      return res.status(400).json({
         err: 1,
-        message: "Lỗi không truyền id người dùng!",
+        message: "Missing Id!",
       });
     }
-
-    const docUser = await feedbackServices.getAllFeedbackByUserId(_id);
-    return res.status(200).json(docUser);
+    try {
+      const response = await feedbackServices.getAllFeedbackByUserId(_id);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
 
   // /user/:_id/up-post [Kiet]
@@ -797,6 +807,44 @@ class ApiController {
     return res.status(200).json(response);
   }
 
+  // [POST] /api/v1/user/change-avatar" [The Van]
+  async handleChangeAvatar(req, res, next) {
+    const { id, imgToDelete } = req.body;
+    const files = req.files;
+
+    if (!id || !imgToDelete || !files) {
+      return res.status(400).json({
+        err: 1,
+        errMessage: "Missing data!!",
+      });
+    }
+
+    // delete img
+    if (imgToDelete.length > 0) {
+      const path = imgToDelete.slice(
+        imgToDelete.indexOf("/motel_posts/") + 1,
+        imgToDelete.lastIndexOf(".")
+      );
+      console.log(path);
+      try {
+        await cloudinary.uploader.destroy(path);
+      } catch (error) {
+        console.log("error", error);
+      }
+    }
+
+    try {
+      const response = await userServices.changeAvatar(id, files[0].path);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
   // /posts?page= [Kiet]
   async handleGetPost(req, res, next) {
     const { page } = req.query;
@@ -865,6 +913,24 @@ class ApiController {
     }
   }
 
+  // /post/:id/comment [Kiet]
+  async handleGetComment(req, res, next) {
+    const { page } = req.query;
+    const { id } = req.params;
+
+    try {
+      const response = await commentServices.getCommentPost(id, page);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
   // /comment [Kiet]
   async handleComment(req, res, next) {
     const { content, userId, postId, parentId } = req.body;
@@ -891,21 +957,65 @@ class ApiController {
     }
   }
 
-  // /post/:id/comment [Kiet]
-  async handleGetComment(req, res, next) {
-    const { page } = req.query;
-    const { id } = req.params;
+  // [POST] "/user/:_id/add-favourite-post?postId=" [The Van]
+  async handleAddFavouritePost(req, res, next) {
+    const { postId } = req.query;
+    const { _id } = req.params;
+
+    if (!postId || !_id) {
+      return res.status(400).json({ message: "Missing id!" });
+    }
 
     try {
-      const response = await commentServices.getCommentPost(id, page);
+      const response = await favouritePostServices.createFavouritePost(
+        postId,
+        _id
+      );
       if (response.err === 0) {
         return res.status(200).json(response);
       } else {
         return res.status(400).json(response);
       }
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json(err);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [GET] "/user/:_id/favourite-post" [The Van]
+  async handleGetFavouritePost(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(400).json({ message: "Missing id!" });
+    }
+
+    try {
+      const response = await favouritePostServices.getFavouritePost(_id);
+
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [DELETE] "/user/:_id/remove-favourite-post?fvPostId=" [The Van]
+  async handleRemoveFavouritePost(req, res, next) {
+    const { _id } = req.params;
+    const { fvPostId } = req.query;
+
+    if (!_id || !fvPostId) {
+      return res.status(400).json({ message: "Missing id!" });
+    }
+
+    try {
+      const response = await favouritePostServices.removeFavouritePost(
+        _id,
+        fvPostId
+      );
+
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
     }
   }
 

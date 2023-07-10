@@ -39,6 +39,13 @@ router.get("/permissions/user/:_id", ApiController.handlePermissionsUser);
 // loggout
 router.get("/loggout", ApiController.handleLoggout);
 
+// user upload avatar
+router.patch(
+  "/user/change-avatar",
+  cloundinary.array("images"),
+  ApiController.handleChangeAvatar
+);
+
 // test
 router.get("/rooms", ApiController.rooms);
 
@@ -48,12 +55,12 @@ router.post("/user/feedback/create/:_id", ApiController.handleCreateFeedback);
 //update a feedback  Than
 router.patch("/user/feedback/update/:_id", ApiController.handleUpdateFeedback);
 
-//delete a feedback Than
-router.delete("/user/feedback/delete/:_id", ApiController.handleDeleteFeedback);
+//delete a feedback
+router.delete("/user/:_id/delete-feedback", ApiController.handleDeleteFeedback);
 
-//read feedback Than
+//get feedback
 
-router.get("/user/feedback/read/:_id", ApiController.getAllFeedbacksById);
+router.get("/user/:_id/all-feedbacks", ApiController.getAllFeedbacksById);
 
 // /api/v1 [board-house]
 router.post("/board-house/create", ApiController.handleCreateBoardHouse);
@@ -126,19 +133,6 @@ router.post("/comment", ApiController.handleComment);
 router.get("/comment/:id/child", ApiController.handleGetChildComment);
 router.get("/comment/limit", ApiController.handleGetLimitComment);
 
-// [upload images cloudinary] [The Van]
-// Upload a image
-router.post("/upload-image", ApiController.handleUploadImage);
-
-// Upload images
-router.post("/upload-images", ApiController.handleUploadImages);
-
-// Delete image
-router.delete("/delete-image", ApiController.handleDeleteImage);
-
-// Delete images
-router.delete("/delete-images", ApiController.handleDeleteImages);
-
 // Create request room owner [The Van]
 // create request
 router.post(
@@ -163,5 +157,21 @@ router.patch("/root/accept-req/:id", ApiController.handleAcceptReq);
 
 // reject request
 router.delete("/root/reject-req/:id", ApiController.handleRejectReq);
+
+// Favourite post [The Van]
+// add
+router.post(
+  "/user/:_id/add-favourite-post",
+  ApiController.handleAddFavouritePost
+);
+
+// get
+router.get("/user/:_id/favourite-post", ApiController.handleGetFavouritePost);
+
+// remove
+router.delete(
+  "/user/:_id/remove-favourite-post",
+  ApiController.handleRemoveFavouritePost
+);
 
 export default router;
