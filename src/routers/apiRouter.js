@@ -1,6 +1,7 @@
 import express from "express";
 import { ApiController } from "../app/Controllers";
 import { cloundinary } from "../middleWares";
+
 const router = express.Router();
 
 // /api/v1
@@ -103,8 +104,20 @@ router.post(
   ApiController.handleUpPost
 );
 
+router.patch(
+  "/user/:_id/edit-post",
+  cloundinary.array("images"),
+  ApiController.handleEditPost
+);
+
 // get all posts
 router.get("/posts", ApiController.handleGetPost);
+
+// get post by id
+router.get("/post/:_id", ApiController.handleGetPostById);
+
+// get comment post
+router.get("/post/:id/comment", ApiController.handleGetComment);
 
 // get all posts of user
 router.get("/users/:_id/posts", ApiController.handleUserGetPost);
@@ -112,11 +125,13 @@ router.get("/users/:_id/posts", ApiController.handleUserGetPost);
 // like post
 router.post("/post/:id/like", ApiController.handleToggleLikePost);
 
-// like post
+// get like post
 router.get("/post/:id/like", ApiController.handleGetLikePost);
 
 // comment
 router.post("/comment", ApiController.handleComment);
+router.get("/comment/:id/child", ApiController.handleGetChildComment);
+router.get("/comment/limit", ApiController.handleGetLimitComment);
 
 // Create request room owner [The Van]
 // create request

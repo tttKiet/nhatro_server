@@ -736,6 +736,50 @@ class ApiController {
     }
   }
 
+  // /user/:_id/edit-post [Kiet]
+  async handleEditPost(req, res, next) {
+    const { content, hashTag, postId } = req.body;
+    const { _id } = req.params;
+    const files = req.files;
+    console.log("postId ", postId);
+    if (!content || !_id || !postId) {
+      if (files?.length > 0) {
+        files.forEach((file) => {
+          cloudinary.uploader.destroy(file.filename);
+        });
+      }
+      return res.status(400).json({
+        err: 1,
+        errMessage: "Missing parameters!!",
+      });
+    }
+
+    try {
+      const response = await postServices.editPost({
+        _id,
+        files,
+        postId,
+        hashTag,
+        content,
+      });
+
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
   // [PATCH] /api/v1/root/accept-req/:id [The Van]
   async handleAcceptReq(req, res, next) {
     const { id } = req.params;
@@ -873,7 +917,7 @@ class ApiController {
   async handleComment(req, res, next) {
     const { content, userId, postId, parentId } = req.body;
 
-    if (!content || !userId || !postId) {
+    if (!content || !userId || (!postId && !parentId)) {
       return res.status(404).json({ message: "Missing input!" });
     }
 
@@ -954,6 +998,72 @@ class ApiController {
       return res.status(200).json(response);
     } catch (error) {
       return res.status(500).json(error);
+    }
+  }
+
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /comment/:id/child [Kiet]
+  async handleGetChildComment(req, res, next) {
+    const { page, type } = req.query;
+    const { id } = req.params;
+
+    try {
+      const response = await commentServices.getChildCommentById({
+        id,
+        page,
+        type,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /comment/:id/child [Kiet]
+  async handleGetLimitComment(req, res, next) {
+    const { postId } = req.query;
+
+    try {
+      const response = await commentServices.getLimitComments({
+        postId,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /post/:_id [Kiet]
+  async handleGetPostById(req, res, next) {
+    const { _id } = req.params;
+
+    try {
+      const response = await postServices.getPostById({
+        postId: _id,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
     }
   }
 }
