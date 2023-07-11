@@ -1041,6 +1041,30 @@ class ApiController {
     }
   }
 
+  // /comment/:id [Kiet]
+  async handleEditComment(req, res, next) {
+    const { id } = req.params;
+    const { content } = req.body;
+    if (!content) {
+      return res.status(400).json("Missing content!");
+    }
+
+    try {
+      const response = await commentServices.editComment({
+        id,
+        content,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
   // /comment/:id/child [Kiet]
   async handleGetLimitComment(req, res, next) {
     const { postId } = req.query;
@@ -1086,6 +1110,25 @@ class ApiController {
     try {
       const response = await postServices.deletePostById({
         postId: _id,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // /comment/:_id [Kiet]
+  async handleDeleteComment(req, res, next) {
+    const { id } = req.params;
+
+    try {
+      const response = await commentServices.deleteCmtById({
+        id,
       });
       if (response.err === 0) {
         return res.status(200).json(response);

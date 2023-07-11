@@ -259,9 +259,89 @@ const getLimitComments = async ({ postId }) => {
   });
 };
 
+const editComment = async ({ id, content }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(id);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `Id input invalid!`,
+        });
+      }
+
+      const cmtDoc = await Comment.findByIdAndUpdate(
+        { _id: id },
+        { content: content }
+      );
+
+      if (!cmtDoc) {
+        return resolve({
+          err: 1,
+          message: `Comment dont edit!`,
+        });
+      }
+
+      const cmt = await Comment.findById(id)
+        .populate("user", "fullName avatar emailVerified _id")
+        .populate({
+          path: "commentParent",
+          populate: {
+            path: "user",
+            select: "fullName avatar emailVerified _id",
+          },
+        });
+
+      return resolve({
+        err: 0,
+        message: `Edited!`,
+        newComment: cmt,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+const deleteCmtById = async ({ id }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(id);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `Id input invalid!`,
+        });
+      }
+
+      const childs = await getChildComments(id);
+      const childIds = childs.map((child) => child._id);
+      await Comment.deleteMany({ _id: { $in: childIds } });
+      const cmtDoc = await Comment.findByIdAndDelete({ _id: id });
+
+      if (!cmtDoc) {
+        return resolve({
+          err: 1,
+          message: `Comment dont edit!`,
+        });
+      }
+
+      return resolve({
+        err: 0,
+        message: `Deleted!`,
+        cmtDeleted: cmtDoc,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
 export default {
   createCmt,
   getCommentPost,
   getChildCommentById,
   getLimitComments,
+  editComment,
+  deleteCmtById,
 };

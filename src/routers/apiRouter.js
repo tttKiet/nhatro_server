@@ -134,6 +134,8 @@ router.get("/post/:id/like", ApiController.handleGetLikePost);
 
 // comment
 router.post("/comment", ApiController.handleComment);
+router.patch("/comment/:id", ApiController.handleEditComment);
+router.delete("/comment/:id", ApiController.handleDeleteComment);
 router.get("/comment/:id/child", ApiController.handleGetChildComment);
 router.get("/comment/limit", ApiController.handleGetLimitComment);
 
