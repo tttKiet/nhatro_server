@@ -174,7 +174,7 @@ const getPostById = ({ postId }) => {
 
       const postDoc = await Post.findById(postId).populate(
         "user",
-        "_id fullName avatar"
+        "_id fullName avatar emailVerified"
       );
 
       if (!postDoc) {
