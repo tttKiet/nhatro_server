@@ -27,7 +27,7 @@ const createFavouritePost = (postId, userId) => {
       if (populatedFavouritePostDoc) {
         return resolve({
           err: 0,
-          message: "Add favourite post successfully",
+          message: "Add favorite post successfully",
           data: populatedFavouritePostDoc,
         });
       }
@@ -83,14 +83,14 @@ const removeFavouritePost = (userId, fvId) => {
       if (favouritePostDoc) {
         return resolve({
           err: 0,
-          message: "Remove favourite post successfully",
+          message: "Remove your favorite post successfully.",
           data: favouritePostDoc,
         });
       }
 
       return resolve({
         err: 1,
-        message: "This favourite post was deleted",
+        message: "This favorite post was deleted.",
       });
     } catch (error) {
       reject(error);
