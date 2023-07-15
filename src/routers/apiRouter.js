@@ -142,7 +142,8 @@ router.get("/comment/limit", ApiController.handleGetLimitComment);
 // Create request room owner [The Van]
 // create request
 router.post(
-  "/user/create-req-board-house",
+  "/user/:_id/create-req-board-house",
+  cloundinary.array("images"),
   ApiController.handleCreateReqBoardHouse
 );
 

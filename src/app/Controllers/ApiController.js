@@ -517,50 +517,40 @@ class ApiController {
     return res.status(200).json({ err: 1, message: "Not existed code!" });
   }
 
-  // [POST] /api/v1/user/create-req-board-house [The Van]
+  // [POST] /api/v1/user/:_id/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
-    const {
-      name,
-      address,
-      phone,
-      electric,
-      water,
-      images,
-      description,
-      userId,
-    } = req.body;
+    const { name, address, phone, electric, water, description } = req.body;
 
-    if (
-      !userId ||
-      !name ||
-      !address ||
-      !phone ||
-      !electric ||
-      !water ||
-      !images ||
-      !description
-    ) {
+    const { _id } = req.params;
+    const files = req.files;
+
+    if (!name || !address || !phone || !electric || !water || !description) {
       return res.status(401).json("Missing data!");
     }
 
     // Create a new board house
-    const boardHouseRes = await boardHouseServices.createBoardHouseFromReq({
-      userId,
-      name,
-      address,
-      phone,
-      electric,
-      water,
-      images,
-    });
 
-    if (boardHouseRes.err === 0) {
-      const reqRes = await reqRoomOwnerServices.createReqRoomOwner(
-        userId,
-        boardHouseRes.boardHouseId,
-        description
-      );
-      return res.status(200).json(reqRes);
+    try {
+      const boardHouseRes = await boardHouseServices.createBoardHouseFromReq({
+        _id,
+        name,
+        address,
+        phone,
+        electric,
+        water,
+        files,
+      });
+
+      if (boardHouseRes.err === 0) {
+        const reqRes = await reqRoomOwnerServices.createReqRoomOwner(
+          _id,
+          boardHouseRes.boardHouseId,
+          description
+        );
+        return res.status(200).json(reqRes);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
     }
 
     return res.status(401).json({

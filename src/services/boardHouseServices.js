@@ -50,17 +50,17 @@ const createBoardHouse = ({ adminId }) => {
 };
 
 const createBoardHouseFromReq = ({
-  userId,
+  _id,
   name,
   address,
   phone,
   electricPrice,
   waterPrice,
-  images,
+  files,
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const isValidAdmin = ObjectId.isValid(userId);
+      const isValidAdmin = ObjectId.isValid(_id);
 
       if (!isValidAdmin) {
         return resolve({
@@ -69,14 +69,16 @@ const createBoardHouseFromReq = ({
         });
       }
 
+      const paths = files.map((f) => f.path);
+
       const boardHouseDoc = await BoardHouse.create({
-        userId: userId,
+        userId: _id,
         name,
         address,
         phone,
         electricPrice,
         waterPrice,
-        images,
+        images: paths,
       });
 
       const populatedBoardHouseDoc = await BoardHouse.findById(
