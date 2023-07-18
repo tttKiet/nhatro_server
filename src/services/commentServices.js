@@ -84,7 +84,7 @@ const getCommentPost = (postId, page = 1) => {
           message: `Id input invalid!`,
         });
       }
-      const pageSize = 3;
+      const pageSize = 5;
       const skip = (page - 1) * pageSize;
       const cmtCount = await Comment.find({ post: postId }).count();
       const cmtDoc = await Comment.find({ post: postId })

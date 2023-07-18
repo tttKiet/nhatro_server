@@ -257,10 +257,37 @@ const getBoardHouseById = (adminId) => {
   });
 };
 
+const getBoardHouseAll = ({ number = 1 }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const pageSize = 30;
+      const skip = (number - 1) * pageSize;
+      const boardHouseDoc = await BoardHouse.find()
+        .populate("userId", "fullName avatar _id phone")
+        .sort({
+          createdAt: "desc",
+        })
+        .skip(skip)
+        .limit(pageSize)
+        .lean();
+
+      return resolve({
+        err: 0,
+        message: "Ok!",
+        data: boardHouseDoc,
+      });
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
+
 export default {
   createBoardHouse,
   updateBoardHouse,
   deleteBoardHouse,
   getBoardHouseById,
   createBoardHouseFromReq,
+  getBoardHouseAll,
 };

@@ -398,6 +398,25 @@ class ApiController {
     return res.status(200).json(response);
   }
 
+  // [GET] /api/v1/board-house/page/:number
+  async handleGetBoardHouseAll(req, res, next) {
+    const { number } = req.params;
+
+    try {
+      const response = await boardHouseServices.getBoardHouseAll({
+        number,
+      });
+
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json("Error ");
+    }
+  }
+
   // [PATCH] /users/:_id [Kiet]
   async handleUpdateInfoUser(req, res, next) {
     const { _id } = req.params;
