@@ -338,14 +338,42 @@ class ApiController {
   // [DELETE] /api/v1/board-house/room/delete/:id [The Van]
   async handleDeleteRoom(req, res, next) {
     const { id } = req.params;
-    if (!id) {
+    const imgsToDelete = req.body;
+
+    if (!id || !imgsToDelete) {
       return res.status(200).json({
         err: 1,
-        message: "Thiếu roomId",
+        message: "Missing parameter",
       });
     }
-    const response = await roomServices.deleteRoomById(id);
-    return res.status(200).json(response);
+
+    try {
+      const response = await roomServices.deleteRoomById(id);
+      if (response.err === 0) {
+        if (imgsToDelete && imgsToDelete.length > 0) {
+          try {
+            await Promise.all(
+              imgsToDelete.map(async (img) => {
+                const path = img.slice(
+                  img.indexOf("/motel_posts/") + 1,
+                  img.lastIndexOf(".")
+                );
+                console.log("path: ", path);
+                await cloudinary.uploader.destroy(path);
+              })
+            );
+          } catch (error) {
+            console.log("error", error);
+          }
+
+          return res.status(200).json(response);
+        }
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
   }
 
   // [PATCH] /api/v1/board-house/room/update/:id [The Van]
@@ -375,7 +403,6 @@ class ApiController {
               img.indexOf("/motel_posts/") + 1,
               img.lastIndexOf(".")
             );
-            console.log("path: ", path);
 
             await cloudinary.uploader.destroy(path);
           })

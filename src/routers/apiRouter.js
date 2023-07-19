@@ -80,7 +80,7 @@ router.post(
   ApiController.handleCreateRoom
 );
 router.get("/board-house/room", ApiController.handleGetAllRooms);
-router.delete("/board-house/room/delete/:id", ApiController.handleDeleteRoom);
+router.post("/board-house/room/delete/:id", ApiController.handleDeleteRoom);
 router.patch(
   "/board-house/room/update/:id",
   cloundinary.array("images"),

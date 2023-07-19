@@ -125,7 +125,7 @@ const deleteRoomById = (roomId) => {
       if (!isRoomId) {
         return resolve({
           err: 1,
-          message: `${roomId} khong hop le`,
+          message: `${roomId} not valid`,
         });
       }
 
@@ -136,14 +136,14 @@ const deleteRoomById = (roomId) => {
       if (roomDoc) {
         return resolve({
           err: 0,
-          message: `${roomId} đã được xoá thành công`,
+          message: `${roomId} was deleted`,
           data: roomDoc,
         });
       }
 
       return resolve({
         err: 2,
-        message: "Có lỗi xảy ra deleteRoomById",
+        message: "Something went wrong at deleteRoomById",
       });
     } catch (error) {
       reject(error);
