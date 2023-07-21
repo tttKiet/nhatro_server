@@ -338,14 +338,42 @@ class ApiController {
   // [DELETE] /api/v1/board-house/room/delete/:id [The Van]
   async handleDeleteRoom(req, res, next) {
     const { id } = req.params;
-    if (!id) {
+    const imgsToDelete = req.body;
+
+    if (!id || !imgsToDelete) {
       return res.status(200).json({
         err: 1,
-        message: "Thiếu roomId",
+        message: "Missing parameter",
       });
     }
-    const response = await roomServices.deleteRoomById(id);
-    return res.status(200).json(response);
+
+    try {
+      const response = await roomServices.deleteRoomById(id);
+      if (response.err === 0) {
+        if (imgsToDelete && imgsToDelete.length > 0) {
+          try {
+            await Promise.all(
+              imgsToDelete.map(async (img) => {
+                const path = img.slice(
+                  img.indexOf("/motel_posts/") + 1,
+                  img.lastIndexOf(".")
+                );
+                console.log("path: ", path);
+                await cloudinary.uploader.destroy(path);
+              })
+            );
+          } catch (error) {
+            console.log("error", error);
+          }
+
+          return res.status(200).json(response);
+        }
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
   }
 
   // [PATCH] /api/v1/board-house/room/update/:id [The Van]
@@ -375,7 +403,6 @@ class ApiController {
               img.indexOf("/motel_posts/") + 1,
               img.lastIndexOf(".")
             );
-            console.log("path: ", path);
 
             await cloudinary.uploader.destroy(path);
           })
@@ -536,50 +563,40 @@ class ApiController {
     return res.status(200).json({ err: 1, message: "Not existed code!" });
   }
 
-  // [POST] /api/v1/user/create-req-board-house [The Van]
+  // [POST] /api/v1/user/:_id/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
-    const {
-      name,
-      address,
-      phone,
-      electric,
-      water,
-      images,
-      description,
-      userId,
-    } = req.body;
+    const { name, address, phone, electric, water, description } = req.body;
 
-    if (
-      !userId ||
-      !name ||
-      !address ||
-      !phone ||
-      !electric ||
-      !water ||
-      !images ||
-      !description
-    ) {
+    const { _id } = req.params;
+    const files = req.files;
+
+    if (!name || !address || !phone || !electric || !water || !description) {
       return res.status(401).json("Missing data!");
     }
 
     // Create a new board house
-    const boardHouseRes = await boardHouseServices.createBoardHouseFromReq({
-      userId,
-      name,
-      address,
-      phone,
-      electric,
-      water,
-      images,
-    });
 
-    if (boardHouseRes.err === 0) {
-      const reqRes = await reqRoomOwnerServices.createReqRoomOwner(
-        userId,
-        boardHouseRes.boardHouseId,
-        description
-      );
-      return res.status(200).json(reqRes);
+    try {
+      const boardHouseRes = await boardHouseServices.createBoardHouseFromReq({
+        _id,
+        name,
+        address,
+        phone,
+        electric,
+        water,
+        files,
+      });
+
+      if (boardHouseRes.err === 0) {
+        const reqRes = await reqRoomOwnerServices.createReqRoomOwner(
+          _id,
+          boardHouseRes.boardHouseId,
+          description
+        );
+        return res.status(200).json(reqRes);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
     }
 
     return res.status(401).json({
