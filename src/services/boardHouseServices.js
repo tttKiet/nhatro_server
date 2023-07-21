@@ -257,6 +257,41 @@ const getBoardHouseById = (adminId) => {
   });
 };
 
+const getBoardHouseBy_Id = ({ id }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(id);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `${id} invalid!!!`,
+        });
+      }
+
+      const boardHouseDoc = await BoardHouse.findById(id).populate(
+        "userId",
+        "_id fullName email emailVerified avatar phone address"
+      );
+
+      if (!boardHouseDoc) {
+        return resolve({
+          err: 2,
+          message: `${id} not found!`,
+        });
+      }
+
+      return resolve({
+        err: 0,
+        message: "Ok!",
+        data: boardHouseDoc,
+      });
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
+
 const getBoardHouseAll = ({ number = 1 }) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -290,4 +325,5 @@ export default {
   getBoardHouseById,
   createBoardHouseFromReq,
   getBoardHouseAll,
+  getBoardHouseBy_Id,
 };

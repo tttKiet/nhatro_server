@@ -65,6 +65,7 @@ router.get("/user/:_id/all-feedbacks", ApiController.getAllFeedbacksById);
 // /api/v1 [board-house]
 router.get("/board-house/page/:number", ApiController.handleGetBoardHouseAll);
 router.post("/board-house/create", ApiController.handleCreateBoardHouse);
+router.get("/board-house/:id", ApiController.handleGetBoardHouseById);
 router.get("/board-house", ApiController.handleGetBoardHouse);
 router.patch(
   "/board-house/update/:id",
