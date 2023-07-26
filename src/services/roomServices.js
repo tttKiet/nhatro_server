@@ -225,4 +225,10 @@ const updateRoom = (id, roomData) => {
   });
 };
 
-export default { createRoom, getAllRoomsByAdminId, deleteRoomById, updateRoom };
+export default {
+  createRoom,
+  getAllRoomsByAdminId,
+  deleteRoomById,
+  getAllRoomsById,
+  updateRoom,
+};

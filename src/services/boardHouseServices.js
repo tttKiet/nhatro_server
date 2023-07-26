@@ -1,5 +1,6 @@
 import { User } from "../app/Models";
 import { BoardHouse } from "../app/Models";
+import roomServices from "./roomServices";
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -268,10 +269,12 @@ const getBoardHouseBy_Id = ({ id }) => {
         });
       }
 
-      const boardHouseDoc = await BoardHouse.findById(id).populate(
-        "userId",
-        "_id fullName email emailVerified avatar phone address"
-      );
+      const boardHouseDoc = await BoardHouse.findById(id)
+        .populate(
+          "userId",
+          "_id fullName email emailVerified avatar phone address"
+        )
+        .lean();
 
       if (!boardHouseDoc) {
         return resolve({
@@ -280,10 +283,14 @@ const getBoardHouseBy_Id = ({ id }) => {
         });
       }
 
+      const rooms = await roomServices.getAllRoomsById(id);
       return resolve({
         err: 0,
         message: "Ok!",
-        data: boardHouseDoc,
+        data: {
+          ...boardHouseDoc,
+          rooms: rooms,
+        },
       });
     } catch (error) {
       console.log(error);
