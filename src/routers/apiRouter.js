@@ -49,6 +49,9 @@ router.patch(
 // test
 router.get("/rooms", ApiController.rooms);
 
+// create rent
+router.post("/room/:id/rent", ApiController.handleRentRoom);
+
 //create a feedback  Than
 router.post("/user/feedback/create/:_id", ApiController.handleCreateFeedback);
 
