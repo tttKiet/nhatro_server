@@ -11,8 +11,8 @@ import {
   postServices,
   likeServices,
   favouritePostServices,
-  rentServices,
   feedbackOfBoardHouseServices,
+  rentServices,
 } from "../../services";
 const cloudinary = require("cloudinary").v2;
 
@@ -1194,6 +1194,155 @@ class ApiController {
       }
     } catch (err) {
       console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // [POST] /room/:id/rent [Kiet]
+  async handleRentRoom(req, res, next) {
+    const { id } = req.params;
+    const { userId, startDate } = req.body;
+    if (!userId || !startDate) {
+      return res.status(400).json("Missing parameters!");
+    }
+    try {
+      const response = await rentServices.createRent({
+        roomId: id,
+        userId,
+        startDate,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  //[POST] /api/v1/boardHouse/:_id/create-feedback?user= [The Van]
+  async handleCreateFeedbackOfBoardHouse(req, res, next) {
+    const { _id } = req.params;
+    const { user } = req.query;
+    const data = req.body;
+
+    const { title, message, star } = data;
+    if (!_id || !user) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+    if (!title || !message || !star) {
+      return res.status(400).json({
+        err: 2,
+        message: "Missing data",
+      });
+    }
+    try {
+      const response = await feedbackOfBoardHouseServices.createFeedback(
+        _id,
+        user,
+        {
+          title,
+          message,
+          star,
+        }
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  //[GET] /api/v1/board-house/:_id/user-feedback?user= [The Van]
+  async handleCheckAlreadyFeedback(req, res, next) {
+    const { _id } = req.params;
+    const { user } = req.query;
+    if (!_id || !user) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+
+    try {
+      const response = await feedbackOfBoardHouseServices.checkAlreadyFeedback(
+        user,
+        _id
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  //[PATCH] /api/v1/user/feedback-boardhouse/update/?feedback= [The Van]
+  async handleUpdateFeedbackOfBoardHouse(req, res, next) {
+    const { feedback } = req.query;
+    const data = req.body;
+
+    const { title, message, star } = data;
+    if (!feedback) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+
+    if (!title || !message || !star) {
+      return res.status(400).json({
+        err: 2,
+        message: "Missing data",
+      });
+    }
+
+    try {
+      const response = await feedbackOfBoardHouseServices.updateFeedback(
+        feedback,
+        data
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  //[DELETE] /api/v1/user/feedback-boardhouse/delete/?feedback= [The Van]
+  async handleDeleteFeedbackOfBoardHouse(req, res, next) {
+    const { feedback } = req.query;
+
+    if (!feedback) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+
+    try {
+      const response = await feedbackOfBoardHouseServices.deleteFeedback(
+        feedback
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
       return res.status(500).json(err);
     }
   }
