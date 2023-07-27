@@ -52,10 +52,10 @@ router.get("/rooms", ApiController.rooms);
 // create rent
 router.post("/room/:id/rent", ApiController.handleRentRoom);
 
-//create a feedback  Than
+//create a feedback
 router.post("/user/feedback/create/:_id", ApiController.handleCreateFeedback);
 
-//update a feedback  Than
+//update a feedback
 router.patch("/user/feedback/update/:_id", ApiController.handleUpdateFeedback);
 
 //delete a feedback
@@ -64,6 +64,24 @@ router.delete("/user/:_id/delete-feedback", ApiController.handleDeleteFeedback);
 //get feedback
 
 router.get("/user/:_id/all-feedbacks", ApiController.getAllFeedbacksById);
+
+// Check already user's feedback for board house
+router.get(
+  "/board-house/:_id/user-feedback",
+  ApiController.handleCheckAlreadyFeedback
+);
+
+// update user's feedback for board house
+router.patch(
+  "/user/feedback-boardhouse/update",
+  ApiController.handleUpdateFeedbackOfBoardHouse
+);
+
+// delete user's feedback for board house
+router.delete(
+  "/user/feedback-boardhouse/delete",
+  ApiController.handleDeleteFeedbackOfBoardHouse
+);
 
 // /api/v1 [board-house]
 router.get("/board-house/page/:number", ApiController.handleGetBoardHouseAll);
@@ -76,6 +94,12 @@ router.patch(
   ApiController.handleUpdateBoardHouse
 );
 router.delete("/board-house/delete/:id", ApiController.handleDeleteBoardHouse);
+
+// /api/v1/boardHouse/:_id/create?user= [The Van]
+router.post(
+  "/boardHouse/:_id/create-feedback",
+  ApiController.handleCreateFeedbackOfBoardHouse
+);
 
 // /api/v1 [room] [The Van]
 router.post(

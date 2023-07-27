@@ -12,6 +12,7 @@ import {
   likeServices,
   favouritePostServices,
   rentServices,
+  feedbackOfBoardHouseServices,
 } from "../../services";
 const cloudinary = require("cloudinary").v2;
 
@@ -639,7 +640,7 @@ class ApiController {
     }
   }
 
-  //[POST] /api/v1/user/feedback/create/:_id ThanThan
+  //[POST] /api/v1/user/feedback/create/:_id [The Van]
   async handleCreateFeedback(req, res, next) {
     const { _id } = req.params;
     const data = req.body;
@@ -1185,31 +1186,6 @@ class ApiController {
     try {
       const response = await boardHouseServices.getBoardHouseBy_Id({
         id,
-      });
-      if (response.err === 0) {
-        return res.status(200).json(response);
-      } else {
-        return res.status(400).json(response);
-      }
-    } catch (err) {
-      console.log(err);
-      return res.status(500).json(err);
-    }
-  }
-
-  // [POST] /room/:id/rent [Kiet]
-  async handleRentRoom(req, res, next) {
-    console.log("--------------------------------lot");
-    const { id } = req.params;
-    const { userId, startDate } = req.body;
-    if (!userId || !startDate) {
-      return res.status(400).json("Missing parameters!");
-    }
-    try {
-      const response = await rentServices.createRent({
-        roomId: id,
-        userId,
-        startDate,
       });
       if (response.err === 0) {
         return res.status(200).json(response);

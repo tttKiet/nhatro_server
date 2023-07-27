@@ -10,3 +10,4 @@ export { default as Like } from "./Like";
 export { default as Comment } from "./Comment";
 export { default as FavouritePost } from "./FavouritePost";
 export { default as Rent } from "./Rent";
+export { default as FeedbackOfBoardHouse } from "./FeedbackOfBoardHouse";
