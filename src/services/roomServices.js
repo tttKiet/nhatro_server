@@ -2,7 +2,16 @@ import { User, BoardHouse, Room } from "../app/Models";
 import { getBoardHouseById } from "./boardHouseServices";
 var ObjectId = require("mongoose").Types.ObjectId;
 
-const createRoom = (id, number, size, isLayout, price, description, files) => {
+const createRoom = (
+  id,
+  number,
+  size,
+  isLayout,
+  price,
+  description,
+  files,
+  options
+) => {
   return new Promise(async (resolve, reject) => {
     try {
       const isValidBoardHouse = ObjectId.isValid(id);
@@ -28,6 +37,7 @@ const createRoom = (id, number, size, isLayout, price, description, files) => {
         description: description,
         images: paths,
         boardHouseId: id,
+        options: options,
       });
       const populatedRoomDoc = await Room.findById(roomDoc._id).populate(
         "boardHouseId"
@@ -36,13 +46,13 @@ const createRoom = (id, number, size, isLayout, price, description, files) => {
       if (populatedRoomDoc) {
         resolve({
           err: 0,
-          message: "Đã tạo phòng thành công!",
+          message: "Create room successfully",
         });
       }
 
       resolve({
         err: 1,
-        message: `Đã có lỗi xảy ra createRoom!!`,
+        message: `Something went wrong at createRoom!!`,
       });
     } catch (err) {
       reject(err);
@@ -171,6 +181,7 @@ const updateRoom = (id, roomData) => {
         description,
         arrImgToDelete,
         files,
+        options,
       } = roomData;
 
       let convertIsLayout = false;
@@ -205,6 +216,7 @@ const updateRoom = (id, roomData) => {
           price: price,
           description: description,
           images: combinedImgs,
+          options: options,
         }
       );
 

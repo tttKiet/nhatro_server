@@ -1,5 +1,6 @@
 import { User } from "../app/Models";
 import { BoardHouse } from "../app/Models";
+import userServices from "./userServices";
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -57,18 +58,10 @@ const createBoardHouseFromReq = ({
   electricPrice,
   waterPrice,
   files,
+  options,
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const isValidAdmin = ObjectId.isValid(_id);
-
-      if (!isValidAdmin) {
-        return resolve({
-          err: 1,
-          message: "Id not valid",
-        });
-      }
-
       const paths = files.map((f) => f.path);
 
       const boardHouseDoc = await BoardHouse.create({
@@ -79,6 +72,7 @@ const createBoardHouseFromReq = ({
         electricPrice,
         waterPrice,
         images: paths,
+        options,
       });
 
       const populatedBoardHouseDoc = await BoardHouse.findById(

@@ -10,6 +10,7 @@ const boardHouseSchema = new Schema(
     electricPrice: { type: String, default: "3000" },
     waterPrice: { type: String, default: "10000" },
     images: [{ type: String, default: [] }],
+    options: [{ type: String, default: [] }],
     userId: { type: mongoose.Types.ObjectId, ref: "User" },
   },
   {
