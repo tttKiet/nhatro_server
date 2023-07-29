@@ -1222,6 +1222,25 @@ class ApiController {
     }
   }
 
+  // [DELETE] /rent/:id [Kiet]
+  async handleDeleteRentRoom(req, res, next) {
+    const { id } = req.params;
+
+    try {
+      const response = await rentServices.deleteRent({
+        _id: id,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
   // [GET] /room/all-rent [Kiet]
   async handleGetRentRoom(req, res, next) {
     const { userId } = req.query;

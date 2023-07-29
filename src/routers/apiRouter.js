@@ -52,6 +52,9 @@ router.get("/rooms", ApiController.rooms);
 // create rent
 router.post("/room/:id/rent", ApiController.handleRentRoom);
 
+// delete rent room
+router.delete("/rent/:id", ApiController.handleDeleteRentRoom);
+
 // get rent
 router.get("/room/all-rent", ApiController.handleGetRentRoom);
 

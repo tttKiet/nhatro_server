@@ -46,7 +46,7 @@ const createRent = async ({ roomId, userId, startDate }) => {
         });
       }
 
-      // Check your request "2023-7-28"
+      // Check your request: test: "2023-7-28"
       var today = new Date();
       var thirtyDaysAgo = new Date(new Date().setDate(today.getDate() - 30));
 
@@ -124,4 +124,24 @@ const getRent = async ({ userId }) => {
   });
 };
 
-export default { createRent, getRent };
+const deleteRent = async ({ _id }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const idValid = ObjectId.isValid(_id);
+      if (!idValid) {
+        return resolve({ err: 1, message: `${_id} invalid!!!` });
+      }
+
+      const rentDoc = await Rent.deleteOne({ _id });
+      if (!rentDoc || rentDoc.deletedCount == 0) {
+        resolve({ err: 2, message: `${_id} is not deleted or deleted!!!` });
+      }
+
+      resolve({ err: 0, message: `${_id} Deleted!!!` });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+export default { createRent, getRent, deleteRent };
