@@ -52,6 +52,9 @@ router.get("/rooms", ApiController.rooms);
 // create rent
 router.post("/room/:id/rent", ApiController.handleRentRoom);
 
+// get rent
+router.get("/room/all-rent", ApiController.handleGetRentRoom);
+
 //create a feedback
 router.post("/user/feedback/create/:_id", ApiController.handleCreateFeedback);
 
