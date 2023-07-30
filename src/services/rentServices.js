@@ -111,6 +111,10 @@ const getRent = async ({ userId }) => {
           path: "room",
           populate: {
             path: "boardHouseId",
+            populate: {
+              path: "userId",
+              select: "fullName phone email emailVerified",
+            },
           },
         })
         .sort({ createdAt: -1 });
