@@ -1466,6 +1466,75 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
+
+  // [GET] /api/v1/board-house/all-rent/:_id
+  async handleGetAllrentsFromBh(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+
+    try {
+      const response = await rentServices.getAllRentsByBoardHouse(_id);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  // [PATCH] /api/v1/rent/:_id/accept
+  async handleAcceptRentReq(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+
+    try {
+      const response = await rentServices.acceptRentReq(_id);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  // [PATCH] /api/v1/rent/:_id/reject
+  async handleRejectRentReq(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+
+    try {
+      const response = await rentServices.rejectRentReq(_id);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
 }
 
 export default new ApiController();
