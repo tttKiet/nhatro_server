@@ -569,13 +569,19 @@ class ApiController {
 
   // [POST] /api/v1/user/:_id/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
-    const { name, address, phone, electric, water, description, options } =
-      req.body;
+    const {
+      name,
+      address,
+      phone,
+      electric,
+      water,
+      description,
+      addressFilter,
+      options,
+    } = req.body;
 
     const { _id } = req.params;
     const files = req.files;
-
-    console.log("_id", _id);
 
     if (
       !name ||
@@ -584,7 +590,8 @@ class ApiController {
       !electric ||
       !water ||
       !description ||
-      !options
+      !options ||
+      !addressFilter
     ) {
       return res.status(401).json("Missing data!");
     }
@@ -601,6 +608,8 @@ class ApiController {
         water,
         files,
         options,
+        addressFilter,
+        description,
       });
 
       if (boardHouseRes.err === 0) {

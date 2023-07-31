@@ -37,7 +37,7 @@ const createRoom = (
         description: description,
         images: paths,
         boardHouseId: id,
-        options: options,
+        options: options.split(","),
       });
       const populatedRoomDoc = await Room.findById(roomDoc._id).populate(
         "boardHouseId"
@@ -216,7 +216,7 @@ const updateRoom = (id, roomData) => {
           price: price,
           description: description,
           images: combinedImgs,
-          options: options,
+          options: options.split(","),
         }
       );
 

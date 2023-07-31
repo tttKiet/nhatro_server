@@ -60,6 +60,8 @@ const createBoardHouseFromReq = ({
   waterPrice,
   files,
   options,
+  addressFilter,
+  description,
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -69,11 +71,13 @@ const createBoardHouseFromReq = ({
         userId: _id,
         name,
         address,
+        description,
         phone,
         electricPrice,
         waterPrice,
         images: paths,
-        options,
+        options: options.split(","),
+        addressFilter: JSON.parse(addressFilter),
       });
 
       const populatedBoardHouseDoc = await BoardHouse.findById(
@@ -163,9 +167,8 @@ const deleteBoardHouse = (adminId, rootId, boardHouseId) => {
       const isValidRoot = ObjectId.isValid(rootId);
 
       const isValidBoardHouse = ObjectId.isValid(boardHouseId);
-      console.log(boardHouseId);
+
       if (!isValidAdmin || !isValidBoardHouse || !isValidRoot) {
-        console.log(isValidBoardHouse);
         return resolve({
           err: 1,
           message: "Id không đúng định dạng",

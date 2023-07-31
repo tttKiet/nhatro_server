@@ -40,7 +40,6 @@ const createReqRoomOwner = (userId, boardHouseId, description) => {
         .populate("boardHouseId");
 
       if (populatedReqDoc) {
-        console.log(populatedReqDoc);
         return resolve({
           err: 0,
           message: "Create req successfully",
