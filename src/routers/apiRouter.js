@@ -12,6 +12,9 @@ router.get("/users/all-users", ApiController.getAllUsers);
 // delete one user have _id
 router.delete("/user/delete/:_id", ApiController.handleDeleteUser);
 
+// edit information user
+router.get("/user/:id/room/rent", ApiController.handleGetRentRoomUser);
+
 // get user by _id
 router.get("/user", ApiController.getUserById);
 
