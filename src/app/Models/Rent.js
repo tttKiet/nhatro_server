@@ -8,7 +8,7 @@ const rentSchema = new Schema(
     user: { type: mongoose.Types.ObjectId, ref: "User" },
     room: { type: mongoose.Types.ObjectId, ref: "Room" },
     startDate: { type: Date },
-    endDate: { type: Date },
+    endDate: { type: Date, default: null },
   },
   {
     timestamps: true,
