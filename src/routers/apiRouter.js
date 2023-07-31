@@ -90,6 +90,7 @@ router.delete(
 );
 
 // /api/v1 [board-house]
+router.get("/board-house/all-rooms", ApiController.handleGetAllRooms);
 router.get("/board-house/page/:number", ApiController.handleGetBoardHouseAll);
 router.post("/board-house/create", ApiController.handleCreateBoardHouse);
 router.get("/board-house/:id", ApiController.handleGetBoardHouseById);
@@ -107,13 +108,19 @@ router.post(
   ApiController.handleCreateFeedbackOfBoardHouse
 );
 
+// get all user's feedback of board house [The Van]
+router.get(
+  "/boardHouse/:_id/all-feedbacks",
+  ApiController.handleGetAllFeedbackOfBoardHouse
+);
+
 // /api/v1 [room] [The Van]
 router.post(
   "/board-house/room/create/:id",
   cloundinary.array("images"),
   ApiController.handleCreateRoom
 );
-router.get("/board-house/room", ApiController.handleGetAllRooms);
+
 router.post("/board-house/room/delete/:id", ApiController.handleDeleteRoom);
 router.patch(
   "/board-house/room/update/:id",

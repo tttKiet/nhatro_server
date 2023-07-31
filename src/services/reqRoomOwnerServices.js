@@ -1,4 +1,5 @@
 import { BoardHouse, ReqRoomOwner, User } from "../app/Models";
+import userServices from "./userServices";
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -39,7 +40,6 @@ const createReqRoomOwner = (userId, boardHouseId, description) => {
         .populate("boardHouseId");
 
       if (populatedReqDoc) {
-        console.log(populatedReqDoc);
         return resolve({
           err: 0,
           message: "Create req successfully",
@@ -139,6 +139,22 @@ const acceptReq = (reqId) => {
       }
 
       const reqDoc = await ReqRoomOwner.findByIdAndUpdate(reqId, { status: 1 });
+
+      const { type } = await userServices.typeUser(reqDoc.userId);
+      // upgrade permission of user
+      if (type === "user") {
+        try {
+          const userRes = await userServices.updatePermissions(reqDoc.userId);
+          if (userRes.err != 0) {
+            return resolve({
+              err: 3,
+              message: "Wrong at updatePermissions of user",
+            });
+          }
+        } catch (error) {
+          reject(error);
+        }
+      }
       if (reqDoc) {
         // Send notification to user here
 
@@ -178,7 +194,7 @@ const rejectReq = (reqId, boardHouseId) => {
         if (reqDoc) {
           return resolve({
             err: 0,
-            message: "Deleted request",
+            message: "Deleted request successfully",
           });
         }
       }

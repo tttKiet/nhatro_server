@@ -9,6 +9,7 @@ const roomSchema = new Schema({
   price: { type: String, default: "" },
   description: { type: String, default: "" },
   images: [{ type: String, default: [] }],
+  options: { type: [{ type: String }], default: [] },
   boardHouseId: { type: mongoose.Types.ObjectId, ref: "BoardHouse" },
 });
 

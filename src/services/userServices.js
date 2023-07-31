@@ -639,6 +639,7 @@ const changeAvatar = async (userId, img) => {
 };
 
 export default {
+  typeUser,
   createUser,
   login,
   getAllUsers,

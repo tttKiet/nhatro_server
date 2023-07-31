@@ -287,10 +287,10 @@ class ApiController {
   // [POST] /api/v1/board-house/room/create/:id [The Van]
   async handleCreateRoom(req, res, next) {
     const { id } = req.params;
-    const { number, size, isLayout, price, description } = req.body;
+    const { number, size, isLayout, price, description, options } = req.body;
     const files = req.files;
 
-    if (!number || !size || !price || !isLayout || !description) {
+    if (!number || !size || !price || !isLayout || !description || !options) {
       return res.status(400).json({
         err: 1,
         message: "Missing data",
@@ -305,7 +305,8 @@ class ApiController {
         isLayout,
         price,
         description,
-        files
+        files,
+        options
       );
 
       if (response.err === 0) {
@@ -324,7 +325,7 @@ class ApiController {
     }
   }
 
-  // [GET] /api/v1/board-house/room? adminId= [The Van]
+  // [GET] /api/v1/board-house/all-rooms? adminId= [The Van]
   async handleGetAllRooms(req, res, next) {
     const { adminId } = req.query;
     if (!adminId) {
@@ -381,11 +382,11 @@ class ApiController {
   // [PATCH] /api/v1/board-house/room/update/:id [The Van]
   async handleUpdateRoom(req, res, next) {
     const { id } = req.params;
-    const { number, size, isLayout, price, description, imgToDelete } =
+    const { number, size, isLayout, price, description, imgToDelete, options } =
       req.body;
     const files = req.files;
 
-    if (!number || !size || !price || !isLayout || !description) {
+    if (!number || !size || !price || !isLayout || !description || !options) {
       return res.status(400).json({
         err: 1,
         message: "Missing data",
@@ -422,6 +423,7 @@ class ApiController {
       description,
       arrImgToDelete,
       files,
+      options,
     });
 
     return res.status(200).json(response);
@@ -567,12 +569,30 @@ class ApiController {
 
   // [POST] /api/v1/user/:_id/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
-    const { name, address, phone, electric, water, description } = req.body;
+    const {
+      name,
+      address,
+      phone,
+      electric,
+      water,
+      description,
+      addressFilter,
+      options,
+    } = req.body;
 
     const { _id } = req.params;
     const files = req.files;
 
-    if (!name || !address || !phone || !electric || !water || !description) {
+    if (
+      !name ||
+      !address ||
+      !phone ||
+      !electric ||
+      !water ||
+      !description ||
+      !options ||
+      !addressFilter
+    ) {
       return res.status(401).json("Missing data!");
     }
 
@@ -587,6 +607,9 @@ class ApiController {
         electric,
         water,
         files,
+        options,
+        addressFilter,
+        description,
       });
 
       if (boardHouseRes.err === 0) {
@@ -826,23 +849,55 @@ class ApiController {
       return res.status(401).json("Missing data!");
     }
 
-    const response = await reqRoomOwnerServices.acceptReq(id);
-
-    return res.status(200).json(response);
+    try {
+      const response = await reqRoomOwnerServices.acceptReq(id);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(401).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
 
+  // api/v1/root/reject-req/:id [The Van]
   async handleRejectReq(req, res, next) {
     const { id } = req.params;
-    const { boardHouseId } = req.body;
-    console.log("first", boardHouseId);
+    const { boardHouseId, imgToDelete } = req.body;
+    console.log("imgToDelete: ", imgToDelete);
 
-    if (!id || !boardHouseId) {
+    if (!id || !boardHouseId || !imgToDelete) {
       return res.status(401).json("Missing data!");
     }
 
-    const response = await reqRoomOwnerServices.rejectReq(id, boardHouseId);
+    if (imgToDelete && imgToDelete.length > 0) {
+      try {
+        await Promise.all(
+          imgToDelete.map(async (img) => {
+            const path = img.slice(
+              img.indexOf("/motel_posts/") + 1,
+              img.lastIndexOf(".")
+            );
 
-    return res.status(200).json(response);
+            await cloudinary.uploader.destroy(path);
+          })
+        );
+      } catch (error) {
+        console.log("error", error);
+      }
+    }
+
+    try {
+      const response = await reqRoomOwnerServices.rejectReq(id, boardHouseId);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(401).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
   }
 
   // [POST] /api/v1/user/change-avatar" [The Van]
@@ -1376,6 +1431,31 @@ class ApiController {
     try {
       const response = await feedbackOfBoardHouseServices.deleteFeedback(
         feedback
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      return res.status(500).json(err);
+    }
+  }
+
+  //[GET] /api/v1/boardhouse/:_id/all-feedbacks [The Van]
+  async handleGetAllFeedbackOfBoardHouse(req, res, next) {
+    const { _id } = req.params;
+
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing id!",
+      });
+    }
+
+    try {
+      const response = await feedbackOfBoardHouseServices.getAllFeedbackById(
+        _id
       );
       if (response.err === 0) {
         return res.status(200).json(response);

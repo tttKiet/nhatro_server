@@ -1,5 +1,6 @@
 import { User } from "../app/Models";
 import { BoardHouse } from "../app/Models";
+import userServices from "./userServices";
 import roomServices from "./roomServices";
 
 var ObjectId = require("mongoose").Types.ObjectId;
@@ -58,28 +59,25 @@ const createBoardHouseFromReq = ({
   electricPrice,
   waterPrice,
   files,
+  options,
+  addressFilter,
+  description,
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const isValidAdmin = ObjectId.isValid(_id);
-
-      if (!isValidAdmin) {
-        return resolve({
-          err: 1,
-          message: "Id not valid",
-        });
-      }
-
       const paths = files.map((f) => f.path);
 
       const boardHouseDoc = await BoardHouse.create({
         userId: _id,
         name,
         address,
+        description,
         phone,
         electricPrice,
         waterPrice,
         images: paths,
+        options: options.split(","),
+        addressFilter: JSON.parse(addressFilter),
       });
 
       const populatedBoardHouseDoc = await BoardHouse.findById(
@@ -169,9 +167,8 @@ const deleteBoardHouse = (adminId, rootId, boardHouseId) => {
       const isValidRoot = ObjectId.isValid(rootId);
 
       const isValidBoardHouse = ObjectId.isValid(boardHouseId);
-      console.log(boardHouseId);
+
       if (!isValidAdmin || !isValidBoardHouse || !isValidRoot) {
-        console.log(isValidBoardHouse);
         return resolve({
           err: 1,
           message: "Id không đúng định dạng",

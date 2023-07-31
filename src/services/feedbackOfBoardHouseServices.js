@@ -57,33 +57,6 @@ const checkAlreadyFeedback = (userId, boardHouseId) => {
     }
   });
 };
-// const getAllFeedbackByUserId = (id) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       const isValid = ObjectId.isValid(id);
-//       if (!isValid) {
-//         resolve({
-//           err: 1,
-//           message: `Id not valid`,
-//         });
-//       }
-//       const feedbackDoc = await Feedback.find({ userId: id });
-//       if (feedbackDoc) {
-//         resolve({
-//           err: 0,
-//           message: "Success!",
-//           data: feedbackDoc,
-//         });
-//       }
-//       resolve({
-//         err: 2,
-//         message: `Something went wrong at getAllFeedbackByUserId`,
-//       });
-//     } catch (error) {
-//       reject(error);
-//     }
-//   });
-// };
 
 const updateFeedback = (feedbackId, data) => {
   return new Promise(async (resolve, reject) => {
@@ -140,41 +113,51 @@ const deleteFeedback = (feedbackId) => {
   });
 };
 
-// const deleteFeedback = async (_id, userId) => {
-//   return new Promise(async (resolve, reject) => {
-//     try {
-//       const isValid = ObjectId.isValid(_id);
-//       if (!isValid) {
-//         return resolve({
-//           err: 3,
-//           message: `${_id} is not valid!`,
-//         });
-//       }
-//       const feedback = await Feedback.findOneAndDelete({
-//         _id: _id,
-//         userId: userId,
-//       });
-//       if (feedback)
-//         return resolve({
-//           err: 0,
-//           message: `Delete feedback successfully`,
-//           dataFeedback: feedback,
-//         });
+const getAllFeedbackById = (boardHouseId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const feedbackDoc = await FeedbackOfBoardHouse.find({
+        boardHouse: boardHouseId,
+      }).populate("user");
 
-//       resolve({
-//         err: 2,
-//         message: `This feedback was deleted`,
-//       });
-//     } catch (error) {
-//       reject(error);
-//     }
-//   });
-// };
+      function countStar(arr) {
+        let count = 0;
+        for (let i = 0; i < arr.length; i++) {
+          count += parseInt(arr[i].star);
+        }
+
+        return parseInt(count) / arr.length;
+      }
+
+      if (feedbackDoc.length > 0) {
+        resolve({
+          err: 0,
+          message: "Get feedback successfully!",
+          data: feedbackDoc,
+          rating: countStar(feedbackDoc),
+        });
+      } else {
+        resolve({
+          err: 0,
+          message: "This board house hasn't any feeback!",
+          data: feedbackDoc,
+        });
+      }
+
+      resolve({
+        err: 1,
+        message: `Something went wrong at getAllFeedbackById !!!`,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
 
 export default {
   createFeedback,
   checkAlreadyFeedback,
-  // getAllFeedbackByUserId,
+  getAllFeedbackById,
   updateFeedback,
   deleteFeedback,
 };
