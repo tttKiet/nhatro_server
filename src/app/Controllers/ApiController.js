@@ -1555,6 +1555,6 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
-
+}
 
 export default new ApiController();

@@ -225,6 +225,12 @@ const rejectRentReq = async (rentId) => {
         err: 0,
         message: "Reject request success fully",
       });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 const getRoomRentByUser = async ({ userId }) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -265,5 +271,5 @@ export default {
   getRent,
   deleteRent,
   getAllRentsByBoardHouse,
-  getRoomRentByUser
+  getRoomRentByUser,
 };
