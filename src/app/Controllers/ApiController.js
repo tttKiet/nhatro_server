@@ -52,6 +52,25 @@ class ApiController {
       .json("ok");
   }
 
+  // [GET] /api/v1/user/:id/room/rent [Kiet]
+  async handleGetRentRoomUser(req, res, next) {
+    const { id } = req.params;
+
+    try {
+      const response = await rentServices.getRoomRentByUser({
+        userId: id,
+      });
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
   // [GET] /api/v1/user?_id= [Kiet]
   async getUserById(req, res, next) {
     const _id = req.query._id;
@@ -1536,6 +1555,6 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
-}
+
 
 export default new ApiController();

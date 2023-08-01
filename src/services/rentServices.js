@@ -225,6 +225,33 @@ const rejectRentReq = async (rentId) => {
         err: 0,
         message: "Reject request success fully",
       });
+const getRoomRentByUser = async ({ userId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const idValid = ObjectId.isValid(userId);
+      if (!idValid) {
+        return resolve({ err: 1, message: `${userId} invalid!!!` });
+      }
+
+      const rentDoc = await Rent.find({
+        status: 1,
+        user: userId,
+        $or: [{ endDate: null }, { endDate: { $gt: new Date() } }],
+      }).populate({
+        path: "room",
+        select: "number size price images isLayout",
+        populate: {
+          path: "boardHouseId",
+          select:
+            "name electricPrice waterPrice address phone electricPrice waterPrice",
+          populate: {
+            path: "userId",
+            select: "fullName email emailVerified avatar phone",
+          },
+        },
+      });
+
+      resolve({ err: 0, message: `Ok`, data: rentDoc });
     } catch (err) {
       reject(err);
     }
@@ -238,4 +265,5 @@ export default {
   getRent,
   deleteRent,
   getAllRentsByBoardHouse,
+  getRoomRentByUser
 };
