@@ -148,7 +148,7 @@ const deleteRent = async ({ _id }) => {
   });
 };
 
-const getAllRentsByBoardHouse = async (boardHouseId) => {
+const getAllRentsByBoardHouse = async (boardHouseId, status) => {
   return new Promise(async (resolve, reject) => {
     try {
       const rentDoc = await Rent.find()
@@ -160,7 +160,7 @@ const getAllRentsByBoardHouse = async (boardHouseId) => {
         .populate({ path: "user", select: "fullName email phone" });
 
       const filteredRents = rentDoc.filter(
-        (rent) => rent.room !== null && rent.status === "0"
+        (rent) => rent.room !== null && rent.status == status
       );
 
       if (!filteredRents) {

@@ -1467,19 +1467,20 @@ class ApiController {
     }
   }
 
-  // [GET] /api/v1/board-house/all-rent/:_id
+  // [GET] /api/v1/board-house/all-rent/:_id?status= [The Van]
   async handleGetAllrentsFromBh(req, res, next) {
     const { _id } = req.params;
+    const { status } = req.query;
 
-    if (!_id) {
+    if (!_id || !status) {
       return res.status(400).json({
         err: 1,
-        message: "Missing id!",
+        message: "Missing data!",
       });
     }
 
     try {
-      const response = await rentServices.getAllRentsByBoardHouse(_id);
+      const response = await rentServices.getAllRentsByBoardHouse(_id, status);
       if (response.err === 0) {
         return res.status(200).json(response);
       } else {
@@ -1490,7 +1491,7 @@ class ApiController {
     }
   }
 
-  // [PATCH] /api/v1/rent/:_id/accept
+  // [PATCH] /api/v1/rent/:_id/accept [The Van]
   async handleAcceptRentReq(req, res, next) {
     const { _id } = req.params;
 
@@ -1513,7 +1514,7 @@ class ApiController {
     }
   }
 
-  // [PATCH] /api/v1/rent/:_id/reject
+  // [PATCH] /api/v1/rent/:_id/reject [The Van]
   async handleRejectRentReq(req, res, next) {
     const { _id } = req.params;
 
