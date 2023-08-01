@@ -148,6 +148,83 @@ const deleteRent = async ({ _id }) => {
   });
 };
 
+const getAllRentsByBoardHouse = async (boardHouseId, status) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const rentDoc = await Rent.find()
+        .populate({
+          path: "room",
+          match: { boardHouseId: boardHouseId },
+          select: "_id number",
+        })
+        .populate({ path: "user", select: "fullName email phone" });
+
+      const filteredRents = rentDoc.filter(
+        (rent) => rent.room !== null && rent.status == status
+      );
+
+      if (!filteredRents) {
+        resolve({
+          err: 1,
+          message: "something wrong at getAllRentsByBoardHouse!",
+        });
+      }
+
+      return resolve({
+        err: 0,
+        message: "Get success fully",
+        data: filteredRents,
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+const acceptRentReq = async (rentId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const currentDate = new Date();
+      const rentDoc = await Rent.findByIdAndUpdate(rentId, {
+        status: "1",
+        startDate: currentDate,
+      });
+
+      if (!rentDoc) {
+        resolve({
+          err: 1,
+          message: "something wrong at acceptRentReq!",
+        });
+      }
+
+      return resolve({
+        err: 0,
+        message: "Accept request success fully",
+      });
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+const rejectRentReq = async (rentId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const rentDoc = await Rent.findByIdAndUpdate(rentId, {
+        status: "-1",
+      });
+
+      if (!rentDoc) {
+        resolve({
+          err: 1,
+          message: "something wrong at acceptRentReq!",
+        });
+      }
+
+      return resolve({
+        err: 0,
+        message: "Reject request success fully",
+      });
 const getRoomRentByUser = async ({ userId }) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -181,4 +258,12 @@ const getRoomRentByUser = async ({ userId }) => {
   });
 };
 
-export default { createRent, getRent, deleteRent, getRoomRentByUser };
+export default {
+  rejectRentReq,
+  acceptRentReq,
+  createRent,
+  getRent,
+  deleteRent,
+  getAllRentsByBoardHouse,
+  getRoomRentByUser
+};

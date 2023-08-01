@@ -55,11 +55,20 @@ router.get("/rooms", ApiController.rooms);
 // create rent
 router.post("/room/:id/rent", ApiController.handleRentRoom);
 
+// Accept rent request
+router.patch("/rent/:_id/accept", ApiController.handleAcceptRentReq);
+
+// Accept rent request
+router.patch("/rent/:_id/reject", ApiController.handleRejectRentReq);
+
 // delete rent room
 router.delete("/rent/:id", ApiController.handleDeleteRentRoom);
 
 // get rent
 router.get("/room/all-rent", ApiController.handleGetRentRoom);
+
+// Get rents from board house
+router.get("/board-house/all-rent/:_id", ApiController.handleGetAllrentsFromBh);
 
 //create a feedback
 router.post("/user/feedback/create/:_id", ApiController.handleCreateFeedback);
