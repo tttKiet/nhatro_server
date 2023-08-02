@@ -142,7 +142,7 @@ const acceptReq = (reqId) => {
 
       const { type } = await userServices.typeUser(reqDoc.userId);
       // upgrade permission of user
-      if (type === "user") {
+      if (reqDoc && type === "user") {
         try {
           const userRes = await userServices.updatePermissions(reqDoc.userId);
           if (userRes.err != 0) {
@@ -158,10 +158,18 @@ const acceptReq = (reqId) => {
       if (reqDoc) {
         // Send notification to user here
 
-        return resolve({
-          err: 0,
-          message: "Accepted request",
-        });
+        // update status of board house
+        const boardHouseDoc = await BoardHouse.findByIdAndUpdate(
+          reqDoc.boardHouseId,
+          { status: "1" }
+        );
+
+        if (boardHouseDoc) {
+          return resolve({
+            err: 0,
+            message: "Accepted request",
+          });
+        }
       }
       return resolve({
         err: 2,

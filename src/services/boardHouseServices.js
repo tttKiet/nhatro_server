@@ -223,7 +223,7 @@ const getBoardHouseById = (adminId) => {
       if (!isValid) {
         return resolve({
           err: 1,
-          message: `${adminId} là id không hợp lệ`,
+          message: `${adminId} is not valid`,
         });
       }
 
@@ -232,21 +232,24 @@ const getBoardHouseById = (adminId) => {
       if (!adminDoc || adminDoc.type !== "admin") {
         return resolve({
           err: 2,
-          message: `${adminId} không phải là admin`,
+          message: `${adminId} is not admin`,
         });
       }
 
-      const boardHouseDoc = await BoardHouse.find({ userId: adminId });
+      const boardHouseDoc = await BoardHouse.find({
+        userId: adminId,
+        status: "1",
+      });
       if (boardHouseDoc) {
         return resolve({
           err: 0,
-          message: "Lấy dữ liệu thành công",
+          message: "Get board house success",
           data: boardHouseDoc,
         });
       } else {
         return resolve({
           err: 3,
-          message: `${adminId} không sở hữu dãy trọ nào`,
+          message: `Something wrong at getBoardHouseById`,
         });
       }
     } catch (error) {
@@ -301,7 +304,7 @@ const getBoardHouseAll = ({ number = 1 }) => {
     try {
       const pageSize = 30;
       const skip = (number - 1) * pageSize;
-      const boardHouseDoc = await BoardHouse.find()
+      const boardHouseDoc = await BoardHouse.find({ status: "1" })
         .populate("userId", "fullName avatar _id phone")
         .sort({
           createdAt: "desc",
