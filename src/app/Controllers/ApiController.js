@@ -264,9 +264,18 @@ class ApiController {
         files,
       });
 
-      return res.status(200).json(response);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+        return res.status(200).json(response);
+      }
     } catch (error) {
-      console.log(error);
+      return res.status(501).json(error);
     }
   }
 
@@ -336,7 +345,7 @@ class ApiController {
             cloudinary.uploader.destroy(file.filename);
           });
         }
-        return res.status(400).json(response);
+        return res.status(200).json(response);
       }
     } catch (error) {
       console.log(error);
@@ -401,11 +410,27 @@ class ApiController {
   // [PATCH] /api/v1/board-house/room/update/:id [The Van]
   async handleUpdateRoom(req, res, next) {
     const { id } = req.params;
-    const { number, size, isLayout, price, description, imgToDelete, options } =
-      req.body;
+    const {
+      number,
+      size,
+      isLayout,
+      price,
+      description,
+      imgToDelete,
+      options,
+      boardHouseId,
+    } = req.body;
     const files = req.files;
 
-    if (!number || !size || !price || !isLayout || !description || !options) {
+    if (
+      !number ||
+      !size ||
+      !price ||
+      !isLayout ||
+      !description ||
+      !options ||
+      !boardHouseId
+    ) {
       return res.status(400).json({
         err: 1,
         message: "Missing data",
@@ -434,18 +459,32 @@ class ApiController {
       }
     }
 
-    const response = await roomServices.updateRoom(id, {
-      number,
-      size,
-      isLayout,
-      price,
-      description,
-      arrImgToDelete,
-      files,
-      options,
-    });
+    try {
+      const response = await roomServices.updateRoom(id, {
+        number,
+        size,
+        isLayout,
+        price,
+        description,
+        arrImgToDelete,
+        files,
+        options,
+        boardHouseId,
+      });
 
-    return res.status(200).json(response);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+        return res.status(200).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
   }
 
   // [GET] /api/v1/board-house/page/:number
@@ -638,15 +677,17 @@ class ApiController {
           description
         );
         return res.status(200).json(reqRes);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+        return res.status(200).json(boardHouseRes);
       }
     } catch (error) {
       return res.status(500).json(error);
     }
-
-    return res.status(401).json({
-      err: 1,
-      message: "Something went wrong at handleCreateReqBoardHouse",
-    });
   }
 
   // [GET] /api/v1/root/all-request-board-house/:id [The Van]

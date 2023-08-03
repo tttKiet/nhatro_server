@@ -1,6 +1,23 @@
-import { User, BoardHouse, Room } from "../app/Models";
-import { getBoardHouseById } from "./boardHouseServices";
+import { BoardHouse, Room } from "../app/Models";
 var ObjectId = require("mongoose").Types.ObjectId;
+
+const checkRoomNumberExisted = async (boardHouseId, number, roomId) => {
+  try {
+    const res = await Room.findOne({
+      boardHouseId: boardHouseId,
+      number: number,
+    });
+    if (res && res._id != roomId) {
+      return true;
+    } else if (res && roomId == undefined) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return "err";
+  }
+};
 
 const createRoom = (
   id,
@@ -19,6 +36,15 @@ const createRoom = (
         return resolve({
           err: 1,
           message: "Id not valid!",
+        });
+      }
+
+      const isExistedNumber = await checkRoomNumberExisted(id, number);
+
+      if (isExistedNumber) {
+        return resolve({
+          err: 3,
+          message: "This room has been existed",
         });
       }
 
@@ -51,7 +77,7 @@ const createRoom = (
       }
 
       resolve({
-        err: 1,
+        err: 2,
         message: `Something went wrong at createRoom!!`,
       });
     } catch (err) {
@@ -182,7 +208,21 @@ const updateRoom = (id, roomData) => {
         arrImgToDelete,
         files,
         options,
+        boardHouseId,
       } = roomData;
+
+      const isExistedNumber = await checkRoomNumberExisted(
+        boardHouseId,
+        number,
+        id
+      );
+
+      if (isExistedNumber) {
+        return resolve({
+          err: 3,
+          message: "This room has been existed",
+        });
+      }
 
       let convertIsLayout = false;
       if (isLayout === "Yes") {

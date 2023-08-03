@@ -5,6 +5,24 @@ import roomServices from "./roomServices";
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
+const checkBoardHouseExisted = async (name, boardHouseId) => {
+  try {
+    const nameTrimed = name.trim();
+    const res = await BoardHouse.findOne({
+      name: nameTrimed,
+    });
+    if (res && res._id != boardHouseId) {
+      return true;
+    } else if (res && boardHouseId == undefined) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return "err";
+  }
+};
+
 const createBoardHouse = ({ adminId }) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -65,6 +83,14 @@ const createBoardHouseFromReq = ({
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const isBoardHouseExisted = await checkBoardHouseExisted(name);
+      if (isBoardHouseExisted) {
+        return resolve({
+          err: 2,
+          message: "This board house has been existed",
+        });
+      }
+
       const paths = files.map((f) => f.path);
 
       const boardHouseDoc = await BoardHouse.create({
@@ -93,7 +119,7 @@ const createBoardHouseFromReq = ({
       }
 
       return resolve({
-        err: 3,
+        err: 2,
         message: "Wrong at createBoardHouseFromReq",
       });
     } catch (error) {
@@ -113,6 +139,14 @@ const updateBoardHouse = (
         return resolve({
           err: 1,
           message: "Id not valid",
+        });
+      }
+
+      const isBoardHouseExisted = await checkBoardHouseExisted(name, id);
+      if (isBoardHouseExisted) {
+        return resolve({
+          err: 3,
+          message: "This board house has been existed",
         });
       }
 
