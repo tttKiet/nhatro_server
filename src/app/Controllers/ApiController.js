@@ -127,6 +127,34 @@ class ApiController {
     return res.status(200).json(docUser);
   }
 
+  // [patch] /api/v1/user/change-password?_id= [The Van]
+  async handleChangePassword(req, res, next) {
+    const _id = req.query._id;
+    const { oldPassword, newPassword } = req.body;
+    if (!_id || !oldPassword || !newPassword) {
+      return res.status(200).json({
+        err: 1,
+        message: "Missing data",
+        data: { oldPassword, newPassword, _id },
+      });
+    }
+
+    try {
+      const response = await userServices.changePassword(
+        _id,
+        oldPassword,
+        newPassword
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(200).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
+  }
+
   // [POST] /api/v1/users/create [Kiet]
   async handleCreateUser(req, res, next) {
     const { fullName, email, password, type, phone, address } = req.body;

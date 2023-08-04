@@ -18,6 +18,9 @@ router.get("/user/:id/room/rent", ApiController.handleGetRentRoomUser);
 // get user by _id
 router.get("/user", ApiController.getUserById);
 
+// change user password
+router.patch("/user/change-password", ApiController.handleChangePassword);
+
 // update info user
 router.patch("/users/:_id", ApiController.handleUpdateInfoUser);
 

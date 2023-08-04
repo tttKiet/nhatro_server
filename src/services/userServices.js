@@ -638,6 +638,55 @@ const changeAvatar = async (userId, img) => {
   });
 };
 
+const changePassword = async (userId, oldPassword, newPassword) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const isValid = ObjectId.isValid(userId);
+      if (!isValid) {
+        return resolve({
+          err: 1,
+          message: `UserId not valid`,
+        });
+      }
+
+      let userDoc = await User.findById(userId);
+      const isComparePassword = await bcrypt.compareSync(
+        oldPassword,
+        userDoc.password
+      );
+
+      if (!isComparePassword) {
+        return resolve({
+          err: 3,
+          message: `Your password not true, please enter the right password`,
+        });
+      }
+
+      const hashPassword = bcrypt.hashSync(newPassword, salt);
+
+      try {
+        userDoc = await User.findByIdAndUpdate(userId, {
+          password: hashPassword,
+        });
+
+        if (userDoc) {
+          return resolve({
+            err: 0,
+            message: `Change password successfully`,
+          });
+        }
+      } catch (error) {
+        return resolve({
+          err: 2,
+          message: `Something went wrong at changePassword`,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   typeUser,
   createUser,
@@ -653,4 +702,5 @@ export default {
   sendCodeEmail,
   verifyTokenEmail,
   changeAvatar,
+  changePassword,
 };
