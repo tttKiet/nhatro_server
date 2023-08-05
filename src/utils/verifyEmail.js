@@ -22,7 +22,6 @@ async function main(email, code) {
   });
 
   let htmlBody = `<h1 stype={{color: 'red'}}> Dear you</h1>
-                  <p> Thank you for completing your registration with 'Future Motel'.</p>
                   <p>  This email serves as a confirmation that your account is activated and that you are officially a part of the [customer portal] family.
                   Enjoy!</p>
 
@@ -39,7 +38,7 @@ async function main(email, code) {
                   </div>
                   <strong>${code}</strong>
                   <p>
-                    Thank you for completing your registration with BK.
+                    Thank you for use our services.
                   </p>
                   <p>
                   Regards,

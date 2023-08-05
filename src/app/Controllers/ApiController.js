@@ -653,6 +653,52 @@ class ApiController {
     return res.status(200).json({ err: 1, message: "Not existed code!" });
   }
 
+  // [POST] /user/miss-password/send-code?email= [The Van]
+  async handleSendCodeMissPassword(req, res, next) {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(401).json("Missing email!");
+    }
+    try {
+      const response = await userServices.sendCodeMissPassword(email);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
+  }
+
+  // [POST] /user/miss-password/verify-code?email=&code= [The Van]
+  async handleVerifyCodeAndChangePassword(req, res, next) {
+    const { email, code } = req.query;
+    const { newPassword } = req.body;
+    console.log("new password", newPassword);
+    if (!email || !code) {
+      return res.status(401).json("Missing data!");
+    }
+    try {
+      let response = await userServices.verifyTokenMissPassword(email, code);
+      if (response.err === 0) {
+        response = await userServices.changePasswordFromMissPassword(
+          email,
+          newPassword
+        );
+        if (response.err === 0) {
+          return res.status(200).json(response);
+        } else {
+          return res.status(400).json(response);
+        }
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
+  }
+
   // [POST] /api/v1/user/:_id/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
     const {

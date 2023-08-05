@@ -609,6 +609,80 @@ const sendCodeEmail = async (email, userId) => {
   });
 };
 
+const sendCodeMissPassword = async (email) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const userDoc = await User.findOne({ email: email });
+
+      if (!userDoc) {
+        return resolve({
+          err: 2,
+          message: "This email does not exist",
+        });
+      } else {
+        const emailVerCode = await emailServices.sendCodeEmail(email);
+        if (!emailVerCode) {
+          return resolve({ err: 3, message: "Failed when send code!" });
+        }
+
+        const codeDoc = await Code.create({
+          code: emailVerCode,
+          user: userDoc._id,
+          email: email,
+        });
+
+        if (!codeDoc) {
+          return resolve({
+            err: 4,
+            message: "Error when save db!",
+          });
+        }
+
+        return resolve({
+          err: 0,
+          message: "Send code successfully",
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+const verifyTokenMissPassword = (email, code) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (code.length !== 6) {
+        return resolve({
+          err: 2,
+          message: `Code:${code} invalid!`,
+        });
+      }
+
+      const currentTimestamp = new Date();
+      const codeDoc = await Code.findOneAndDelete({
+        code,
+        email,
+        expires: { $gt: currentTimestamp },
+      }).sort({ expires: -1 });
+
+      if (!codeDoc) {
+        return resolve({
+          err: 3,
+          message: `This code doesn't match! The code has expired or is not correct!`,
+        });
+      } else {
+        return resolve({
+          err: 0,
+          message: `Code correctly match`,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 const changeAvatar = async (userId, img) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -687,6 +761,34 @@ const changePassword = async (userId, oldPassword, newPassword) => {
   });
 };
 
+const changePasswordFromMissPassword = async (email, newPassword) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const hashPassword = bcrypt.hashSync(newPassword, salt);
+
+      const userDoc = await User.findOneAndUpdate(
+        { email: email },
+        {
+          password: hashPassword,
+        }
+      );
+      if (userDoc) {
+        return resolve({
+          err: 0,
+          message: `Change password successfully`,
+        });
+      }
+
+      return resolve({
+        err: 1,
+        message: `Something went wrong at changePasswordFromMissPassword`,
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   typeUser,
   createUser,
@@ -703,4 +805,7 @@ export default {
   verifyTokenEmail,
   changeAvatar,
   changePassword,
+  sendCodeMissPassword,
+  verifyTokenMissPassword,
+  changePasswordFromMissPassword,
 };

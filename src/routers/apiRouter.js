@@ -154,6 +154,18 @@ router.post(
   ApiController.handleVerifyCodeEmail
 );
 
+// code miss pasword
+router.post(
+  "/user/miss-password/send-code",
+  ApiController.handleSendCodeMissPassword
+);
+
+// verify code miss pasword
+router.post(
+  "/user/miss-password/verify-code",
+  ApiController.handleVerifyCodeAndChangePassword
+);
+
 // up post
 router.post(
   "/user/:_id/up-post",
