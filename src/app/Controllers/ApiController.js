@@ -1670,6 +1670,23 @@ class ApiController {
       return res.status(500).json(err);
     }
   }
+
+  // [GET] /api/v1/board-house/:_id/rating-price [The Van]
+  async handleGetRatingAndPriceBh(req, res, next) {
+    const { _id } = req.params;
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data",
+      });
+    }
+    try {
+      const response = await boardHouseServices.getRatingAndPrice(_id);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
 }
 
 export default new ApiController();

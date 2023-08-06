@@ -1,4 +1,4 @@
-import { User } from "../app/Models";
+import { FeedbackOfBoardHouse, Room, User } from "../app/Models";
 import { BoardHouse } from "../app/Models";
 import userServices from "./userServices";
 import roomServices from "./roomServices";
@@ -347,10 +347,78 @@ const getBoardHouseAll = ({ number = 1 }) => {
         .limit(pageSize)
         .lean();
 
+      let arr = [];
+
+      if (boardHouseDoc.length > 0) {
+        arr = await Promise.all(
+          boardHouseDoc.map(async (bh) => {
+            return await getRatingAndPrice(bh._id);
+          })
+        );
+
+        const combinedData = boardHouseDoc.map((bh, index) => {
+          return { ...bh, ...arr[index] };
+        });
+
+        return resolve({
+          err: 0,
+          message: "Ok!",
+          data: combinedData,
+          arr: arr,
+        });
+      }
+
       return resolve({
         err: 0,
         message: "Ok!",
         data: boardHouseDoc,
+        arr: arr,
+      });
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
+
+const getRatingAndPrice = (boardHouseId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const feedbackDoc = await FeedbackOfBoardHouse.find({
+        boardHouse: boardHouseId,
+      }).select("star");
+
+      function countStar(arr) {
+        let count = 0;
+        for (let i = 0; i < arr.length; i++) {
+          count += parseInt(arr[i].star);
+        }
+
+        return parseInt(count) / arr.length;
+      }
+
+      const maxPrice = await Room.find({ boardHouseId: boardHouseId })
+        .select("price")
+        .sort({ price: -1 })
+        .limit(1);
+
+      const minPrice = await Room.find({ boardHouseId: boardHouseId })
+        .select("price")
+        .sort({ price: +1 })
+        .limit(1);
+
+      if (minPrice.length > 0 && maxPrice.length > 0) {
+        return resolve({
+          star: Math.round(countStar(feedbackDoc) * 100) / 100,
+          maxPrice: maxPrice[0].price,
+          minPrice: minPrice[0].price,
+        });
+      }
+
+      return resolve({
+        star: Math.round(countStar(feedbackDoc) * 100) / 100,
+        maxPrice: null,
+        minPrice: null,
       });
     } catch (error) {
       console.log(error);
@@ -367,4 +435,5 @@ export default {
   createBoardHouseFromReq,
   getBoardHouseAll,
   getBoardHouseBy_Id,
+  getRatingAndPrice,
 };

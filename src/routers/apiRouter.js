@@ -116,6 +116,10 @@ router.patch(
   ApiController.handleUpdateBoardHouse
 );
 router.delete("/board-house/delete/:id", ApiController.handleDeleteBoardHouse);
+router.get(
+  "/board-house/:_id/rating-price",
+  ApiController.handleGetRatingAndPriceBh
+);
 
 // /api/v1/boardHouse/:_id/create?user= [The Van]
 router.post(
