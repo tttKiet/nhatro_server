@@ -1,9 +1,27 @@
-import { User } from "../app/Models";
+import { FeedbackOfBoardHouse, Room, User } from "../app/Models";
 import { BoardHouse } from "../app/Models";
 import userServices from "./userServices";
 import roomServices from "./roomServices";
 
 var ObjectId = require("mongoose").Types.ObjectId;
+
+const checkBoardHouseExisted = async (name, boardHouseId) => {
+  try {
+    const nameTrimed = name.trim();
+    const res = await BoardHouse.findOne({
+      name: nameTrimed,
+    });
+    if (res && res._id != boardHouseId) {
+      return true;
+    } else if (res && boardHouseId == undefined) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    return "err";
+  }
+};
 
 const createBoardHouse = ({ adminId }) => {
   return new Promise(async (resolve, reject) => {
@@ -65,6 +83,14 @@ const createBoardHouseFromReq = ({
 }) => {
   return new Promise(async (resolve, reject) => {
     try {
+      const isBoardHouseExisted = await checkBoardHouseExisted(name);
+      if (isBoardHouseExisted) {
+        return resolve({
+          err: 2,
+          message: "This board house has been existed",
+        });
+      }
+
       const paths = files.map((f) => f.path);
 
       const boardHouseDoc = await BoardHouse.create({
@@ -93,7 +119,7 @@ const createBoardHouseFromReq = ({
       }
 
       return resolve({
-        err: 3,
+        err: 2,
         message: "Wrong at createBoardHouseFromReq",
       });
     } catch (error) {
@@ -113,6 +139,14 @@ const updateBoardHouse = (
         return resolve({
           err: 1,
           message: "Id not valid",
+        });
+      }
+
+      const isBoardHouseExisted = await checkBoardHouseExisted(name, id);
+      if (isBoardHouseExisted) {
+        return resolve({
+          err: 3,
+          message: "This board house has been existed",
         });
       }
 
@@ -223,7 +257,7 @@ const getBoardHouseById = (adminId) => {
       if (!isValid) {
         return resolve({
           err: 1,
-          message: `${adminId} là id không hợp lệ`,
+          message: `${adminId} is not valid`,
         });
       }
 
@@ -232,21 +266,24 @@ const getBoardHouseById = (adminId) => {
       if (!adminDoc || adminDoc.type !== "admin") {
         return resolve({
           err: 2,
-          message: `${adminId} không phải là admin`,
+          message: `${adminId} is not admin`,
         });
       }
 
-      const boardHouseDoc = await BoardHouse.find({ userId: adminId });
+      const boardHouseDoc = await BoardHouse.find({
+        userId: adminId,
+        status: "1",
+      });
       if (boardHouseDoc) {
         return resolve({
           err: 0,
-          message: "Lấy dữ liệu thành công",
+          message: "Get board house success",
           data: boardHouseDoc,
         });
       } else {
         return resolve({
           err: 3,
-          message: `${adminId} không sở hữu dãy trọ nào`,
+          message: `Something wrong at getBoardHouseById`,
         });
       }
     } catch (error) {
@@ -301,7 +338,7 @@ const getBoardHouseAll = ({ number = 1 }) => {
     try {
       const pageSize = 30;
       const skip = (number - 1) * pageSize;
-      const boardHouseDoc = await BoardHouse.find()
+      const boardHouseDoc = await BoardHouse.find({ status: "1" })
         .populate("userId", "fullName avatar _id phone")
         .sort({
           createdAt: "desc",
@@ -310,10 +347,78 @@ const getBoardHouseAll = ({ number = 1 }) => {
         .limit(pageSize)
         .lean();
 
+      let arr = [];
+
+      if (boardHouseDoc.length > 0) {
+        arr = await Promise.all(
+          boardHouseDoc.map(async (bh) => {
+            return await getRatingAndPrice(bh._id);
+          })
+        );
+
+        const combinedData = boardHouseDoc.map((bh, index) => {
+          return { ...bh, ...arr[index] };
+        });
+
+        return resolve({
+          err: 0,
+          message: "Ok!",
+          data: combinedData,
+          arr: arr,
+        });
+      }
+
       return resolve({
         err: 0,
         message: "Ok!",
         data: boardHouseDoc,
+        arr: arr,
+      });
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
+
+const getRatingAndPrice = (boardHouseId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const feedbackDoc = await FeedbackOfBoardHouse.find({
+        boardHouse: boardHouseId,
+      }).select("star");
+
+      function countStar(arr) {
+        let count = 0;
+        for (let i = 0; i < arr.length; i++) {
+          count += parseInt(arr[i].star);
+        }
+
+        return parseInt(count) / arr.length;
+      }
+
+      const maxPrice = await Room.find({ boardHouseId: boardHouseId })
+        .select("price")
+        .sort({ price: -1 })
+        .limit(1);
+
+      const minPrice = await Room.find({ boardHouseId: boardHouseId })
+        .select("price")
+        .sort({ price: +1 })
+        .limit(1);
+
+      if (minPrice.length > 0 && maxPrice.length > 0) {
+        return resolve({
+          star: Math.round(countStar(feedbackDoc) * 100) / 100,
+          maxPrice: maxPrice[0].price,
+          minPrice: minPrice[0].price,
+        });
+      }
+
+      return resolve({
+        star: Math.round(countStar(feedbackDoc) * 100) / 100,
+        maxPrice: null,
+        minPrice: null,
       });
     } catch (error) {
       console.log(error);
@@ -330,4 +435,5 @@ export default {
   createBoardHouseFromReq,
   getBoardHouseAll,
   getBoardHouseBy_Id,
+  getRatingAndPrice,
 };

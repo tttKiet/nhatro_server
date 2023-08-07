@@ -134,7 +134,7 @@ const getAllFeedbackById = (boardHouseId) => {
           err: 0,
           message: "Get feedback successfully!",
           data: feedbackDoc,
-          rating: countStar(feedbackDoc),
+          rating: Math.round(countStar(feedbackDoc) * 100) / 100,
         });
       } else {
         resolve({

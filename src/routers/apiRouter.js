@@ -18,6 +18,9 @@ router.get("/user/:id/room/rent", ApiController.handleGetRentRoomUser);
 // get user by _id
 router.get("/user", ApiController.getUserById);
 
+// change user password
+router.patch("/user/change-password", ApiController.handleChangePassword);
+
 // update info user
 router.patch("/users/:_id", ApiController.handleUpdateInfoUser);
 
@@ -113,6 +116,10 @@ router.patch(
   ApiController.handleUpdateBoardHouse
 );
 router.delete("/board-house/delete/:id", ApiController.handleDeleteBoardHouse);
+router.get(
+  "/board-house/:_id/rating-price",
+  ApiController.handleGetRatingAndPriceBh
+);
 
 // /api/v1/boardHouse/:_id/create?user= [The Van]
 router.post(
@@ -149,6 +156,18 @@ router.post(
 router.post(
   "/user/verify/email/verify-code",
   ApiController.handleVerifyCodeEmail
+);
+
+// code miss pasword
+router.post(
+  "/user/miss-password/send-code",
+  ApiController.handleSendCodeMissPassword
+);
+
+// verify code miss pasword
+router.post(
+  "/user/miss-password/verify-code",
+  ApiController.handleVerifyCodeAndChangePassword
 );
 
 // up post

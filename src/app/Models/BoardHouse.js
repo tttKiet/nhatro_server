@@ -14,6 +14,7 @@ const boardHouseSchema = new Schema(
     images: [{ type: String, default: [] }],
     options: { type: [{ type: String }], default: [] },
     userId: { type: mongoose.Types.ObjectId, ref: "User" },
+    status: { type: String, default: "0" },
   },
   {
     timestamps: {

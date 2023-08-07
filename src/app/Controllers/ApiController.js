@@ -127,6 +127,34 @@ class ApiController {
     return res.status(200).json(docUser);
   }
 
+  // [patch] /api/v1/user/change-password?_id= [The Van]
+  async handleChangePassword(req, res, next) {
+    const _id = req.query._id;
+    const { oldPassword, newPassword } = req.body;
+    if (!_id || !oldPassword || !newPassword) {
+      return res.status(200).json({
+        err: 1,
+        message: "Missing data",
+        data: { oldPassword, newPassword, _id },
+      });
+    }
+
+    try {
+      const response = await userServices.changePassword(
+        _id,
+        oldPassword,
+        newPassword
+      );
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(200).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
+  }
+
   // [POST] /api/v1/users/create [Kiet]
   async handleCreateUser(req, res, next) {
     const { fullName, email, password, type, phone, address } = req.body;
@@ -264,9 +292,18 @@ class ApiController {
         files,
       });
 
-      return res.status(200).json(response);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+        return res.status(200).json(response);
+      }
     } catch (error) {
-      console.log(error);
+      return res.status(501).json(error);
     }
   }
 
@@ -336,7 +373,7 @@ class ApiController {
             cloudinary.uploader.destroy(file.filename);
           });
         }
-        return res.status(400).json(response);
+        return res.status(200).json(response);
       }
     } catch (error) {
       console.log(error);
@@ -401,11 +438,27 @@ class ApiController {
   // [PATCH] /api/v1/board-house/room/update/:id [The Van]
   async handleUpdateRoom(req, res, next) {
     const { id } = req.params;
-    const { number, size, isLayout, price, description, imgToDelete, options } =
-      req.body;
+    const {
+      number,
+      size,
+      isLayout,
+      price,
+      description,
+      imgToDelete,
+      options,
+      boardHouseId,
+    } = req.body;
     const files = req.files;
 
-    if (!number || !size || !price || !isLayout || !description || !options) {
+    if (
+      !number ||
+      !size ||
+      !price ||
+      !isLayout ||
+      !description ||
+      !options ||
+      !boardHouseId
+    ) {
       return res.status(400).json({
         err: 1,
         message: "Missing data",
@@ -434,18 +487,32 @@ class ApiController {
       }
     }
 
-    const response = await roomServices.updateRoom(id, {
-      number,
-      size,
-      isLayout,
-      price,
-      description,
-      arrImgToDelete,
-      files,
-      options,
-    });
+    try {
+      const response = await roomServices.updateRoom(id, {
+        number,
+        size,
+        isLayout,
+        price,
+        description,
+        arrImgToDelete,
+        files,
+        options,
+        boardHouseId,
+      });
 
-    return res.status(200).json(response);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+        return res.status(200).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
   }
 
   // [GET] /api/v1/board-house/page/:number
@@ -586,6 +653,52 @@ class ApiController {
     return res.status(200).json({ err: 1, message: "Not existed code!" });
   }
 
+  // [POST] /user/miss-password/send-code?email= [The Van]
+  async handleSendCodeMissPassword(req, res, next) {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(401).json("Missing email!");
+    }
+    try {
+      const response = await userServices.sendCodeMissPassword(email);
+      if (response.err === 0) {
+        return res.status(200).json(response);
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
+  }
+
+  // [POST] /user/miss-password/verify-code?email=&code= [The Van]
+  async handleVerifyCodeAndChangePassword(req, res, next) {
+    const { email, code } = req.query;
+    const { newPassword } = req.body;
+    console.log("new password", newPassword);
+    if (!email || !code) {
+      return res.status(401).json("Missing data!");
+    }
+    try {
+      let response = await userServices.verifyTokenMissPassword(email, code);
+      if (response.err === 0) {
+        response = await userServices.changePasswordFromMissPassword(
+          email,
+          newPassword
+        );
+        if (response.err === 0) {
+          return res.status(200).json(response);
+        } else {
+          return res.status(400).json(response);
+        }
+      } else {
+        return res.status(400).json(response);
+      }
+    } catch (error) {
+      return res.status(501).json(error);
+    }
+  }
+
   // [POST] /api/v1/user/:_id/create-req-board-house [The Van]
   async handleCreateReqBoardHouse(req, res, next) {
     const {
@@ -638,15 +751,17 @@ class ApiController {
           description
         );
         return res.status(200).json(reqRes);
+      } else {
+        if (files.length > 0) {
+          files.forEach((file) => {
+            cloudinary.uploader.destroy(file.filename);
+          });
+        }
+        return res.status(200).json(boardHouseRes);
       }
     } catch (error) {
       return res.status(500).json(error);
     }
-
-    return res.status(401).json({
-      err: 1,
-      message: "Something went wrong at handleCreateReqBoardHouse",
-    });
   }
 
   // [GET] /api/v1/root/all-request-board-house/:id [The Van]
@@ -1553,6 +1668,23 @@ class ApiController {
       }
     } catch (err) {
       return res.status(500).json(err);
+    }
+  }
+
+  // [GET] /api/v1/board-house/:_id/rating-price [The Van]
+  async handleGetRatingAndPriceBh(req, res, next) {
+    const { _id } = req.params;
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data",
+      });
+    }
+    try {
+      const response = await boardHouseServices.getRatingAndPrice(_id);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
     }
   }
 }
