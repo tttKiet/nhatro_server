@@ -24,7 +24,7 @@ const createRent = async ({ roomId, userId, startDate }) => {
         });
 
       // Check free time
-      const rentDocExitst = await Room.find({
+      const rentDocExitst = await Rent.find({
         userId: userId,
         status: 1,
         roomId,
@@ -148,32 +148,31 @@ const deleteRent = async ({ _id }) => {
   });
 };
 
-const getAllRentsByBoardHouse = async (boardHouseId, status) => {
+const getAllRentsByBoardHouse = async (boardHouseId, status = 1) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const rentDoc = await Rent.find()
+      let rentDocs = await Rent.find({
+        status: status,
+        $or: [{ endDate: null }, { endDate: { $gt: new Date() } }],
+      })
         .populate({
           path: "room",
-          match: { boardHouseId: boardHouseId },
-          select: "_id number",
+          select: "_id number price boardHouseId",
+          populate: {
+            path: "boardHouseId",
+            select: "_id name electricPrice waterPrice",
+          },
         })
-        .populate({ path: "user", select: "fullName email phone" });
-
-      const filteredRents = rentDoc.filter(
-        (rent) => rent.room !== null && rent.status == status
+        .populate({ path: "user", select: "fullName email phone" })
+        .lean();
+      rentDocs = rentDocs.filter(
+        (v) => v.room.boardHouseId._id == boardHouseId
       );
-
-      if (!filteredRents) {
-        resolve({
-          err: 1,
-          message: "something wrong at getAllRentsByBoardHouse!",
-        });
-      }
 
       return resolve({
         err: 0,
-        message: "Get success fully",
-        data: filteredRents,
+        message: "Get successfully!",
+        data: rentDocs,
       });
     } catch (err) {
       reject(err);
