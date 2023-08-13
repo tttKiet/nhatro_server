@@ -120,6 +120,7 @@ router.get(
   "/board-house/:_id/rating-price",
   ApiController.handleGetRatingAndPriceBh
 );
+router.post("/board-house/filter", ApiController.handleFilterBoardHouse);
 
 // /api/v1/boardHouse/:_id/create?user= [The Van]
 router.post(

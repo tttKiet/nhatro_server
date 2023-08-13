@@ -6,7 +6,7 @@ const roomSchema = new Schema({
   number: { type: Number, default: 1 },
   size: { type: Number, default: 1 },
   isLayout: { type: Boolean, default: false },
-  price: { type: String, default: "" },
+  price: { type: Number, default: 1 },
   description: { type: String, default: "" },
   images: [{ type: String, default: [] }],
   options: { type: [{ type: String }], default: [] },

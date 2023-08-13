@@ -318,12 +318,16 @@ const getBoardHouseBy_Id = ({ id }) => {
       }
 
       const rooms = await roomServices.getAllRoomsById(id);
+
+      const starAndPrice = await getRatingAndPrice(boardHouseDoc._id);
+
       return resolve({
         err: 0,
         message: "Ok!",
         data: {
           ...boardHouseDoc,
           rooms: rooms,
+          starAndPrice: starAndPrice,
         },
       });
     } catch (error) {
@@ -427,6 +431,114 @@ const getRatingAndPrice = (boardHouseId) => {
   });
 };
 
+const filterBoardHouse = (dataFilter) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      console.log("-----------------------------\n");
+      let boardHouseData = [];
+      if (!dataFilter.province && dataFilter.min && dataFilter.max) {
+        // $gte: greater than or equal to
+        // $lte: less than or equal to
+        try {
+          const intMin = parseInt(dataFilter.min);
+          const intMax = parseInt(dataFilter.max);
+
+          const rooms = await Room.find()
+            .where("price")
+            .gte(intMin)
+            .lte(intMax);
+
+          console.log("rooms", rooms);
+
+          const boardHouseIds = rooms.map((room) => room.boardHouseId);
+
+          // $in used to search values in the specified list
+          const boardHouseQuery = {
+            _id: { $in: boardHouseIds },
+          };
+
+          const boardHouses = await BoardHouse.find(boardHouseQuery).lean();
+          boardHouseData = boardHouses;
+        } catch (err) {
+          reject(err);
+        }
+      } else if (dataFilter.province && !dataFilter.min && !dataFilter.max) {
+        const query = {
+          "addressFilter.province.value": dataFilter?.province?.value,
+        };
+        if (dataFilter.district) {
+          query["addressFilter.district.value"] = dataFilter.district.value;
+        }
+        if (dataFilter.ward) {
+          query["addressFilter.ward.value"] = dataFilter.ward.value;
+        }
+        try {
+          const boardHouse = await BoardHouse.find(query).lean();
+          boardHouseData = boardHouse;
+        } catch (error) {
+          reject(err);
+        }
+      } else {
+        try {
+          const rooms = await Room.find()
+            .where("price")
+            .gte(dataFilter.min)
+            .lte(dataFilter.max);
+
+          const boardHouseIds = rooms.map((room) => room.boardHouseId);
+          const query = {
+            "addressFilter.province.value": dataFilter?.province?.value,
+          };
+          if (dataFilter.district) {
+            query["addressFilter.district.value"] = dataFilter.district.value;
+          }
+          if (dataFilter.ward) {
+            query["addressFilter.ward.value"] = dataFilter.ward.value;
+          }
+
+          const boardHouseQuery = {
+            ...query,
+            _id: { $in: boardHouseIds },
+          };
+
+          const boardHouse = await BoardHouse.find(boardHouseQuery).lean();
+          boardHouseData = boardHouse;
+        } catch (error) {
+          reject(err);
+        }
+      }
+
+      let arr = [];
+
+      if (boardHouseData.length > 0) {
+        arr = await Promise.all(
+          boardHouseData.map(async (bh) => {
+            return await getRatingAndPrice(bh._id);
+          })
+        );
+        const combinedData = boardHouseData.map((bh, index) => {
+          return { ...bh, ...arr[index] };
+        });
+        return resolve({
+          err: 0,
+          message: "Ok!",
+          data: combinedData,
+        });
+      }
+
+      return resolve({
+        err: 0,
+        message: "Empty!",
+        data: boardHouseData,
+        arr: arr,
+      });
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
+  });
+};
+
 export default {
   createBoardHouse,
   updateBoardHouse,
@@ -435,5 +547,6 @@ export default {
   createBoardHouseFromReq,
   getBoardHouseAll,
   getBoardHouseBy_Id,
+  filterBoardHouse,
   getRatingAndPrice,
 };

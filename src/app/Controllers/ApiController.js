@@ -1687,6 +1687,24 @@ class ApiController {
       return res.status(500).json(error);
     }
   }
+
+  // [POST] /api/v1/board-house/filter [The Van]
+  async handleFilterBoardHouse(req, res, next) {
+    const { data } = req.body;
+    console.log("data", data);
+    if (!data) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data",
+      });
+    }
+    try {
+      const response = await boardHouseServices.filterBoardHouse(data);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
 }
 
 export default new ApiController();
