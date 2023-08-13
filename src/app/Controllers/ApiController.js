@@ -1734,6 +1734,28 @@ class ApiController {
       return res.status(500).json(error);
     }
   }
+  // [GET] /api/v1/bill/rent/:id [Bui Kiet]
+  async handleGetBillByRentId(req, res, next) {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.getBillByRentId({
+        rentId: id,
+      });
+
+      if (response.err == 0) return res.status(200).json(response);
+      else {
+        res.status(401).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
 }
 
 export default new ApiController();

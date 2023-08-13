@@ -202,7 +202,6 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
 
       async function testBill(id) {
         const res = await createBill({ rentId: id });
-        console.log("res", res);
         let bill;
         if (res.err === 0) {
           res.bill;
@@ -283,4 +282,18 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
   });
 };
 
-export default { createBill, getBillOnMonth };
+const getBillByRentId = async ({ rentId }) => {
+  return new Promise(async (resolve, reject) => {
+    // get all menber rent
+    const bills = await Bill.find({ rent: rentId }).sort({ createdAt: -1 });
+    return resolve({ err: 0, message: "OK", bills: bills });
+
+    try {
+    } catch (e) {
+      console.log(e);
+      reject(e);
+    }
+  });
+};
+
+export default { createBill, getBillOnMonth, getBillByRentId };
