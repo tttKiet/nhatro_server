@@ -1729,6 +1729,25 @@ class ApiController {
     }
   }
 
+  // [GET] /api/v1/bill/:_id/room [The Van]
+  async handleGetRoomFromBillId(req, res, next) {
+    const { _id } = req.params;
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.getRoomFromBillID({
+        billId: _id,
+      });
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
   // [GET] /api/v1/bill/for-boardhouse [Bui Kiet]
   async handleBillForBoardHouse(req, res, next) {
     const { boardHouseId, date } = req.query;

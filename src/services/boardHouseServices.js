@@ -480,10 +480,12 @@ const filterBoardHouse = (dataFilter) => {
         }
       } else {
         try {
+          const intMin = parseInt(dataFilter.min);
+          const intMax = parseInt(dataFilter.max);
           const rooms = await Room.find()
             .where("price")
-            .gte(dataFilter.min)
-            .lte(dataFilter.max);
+            .gte(intMin)
+            .lte(intMax);
 
           const boardHouseIds = rooms.map((room) => room.boardHouseId);
           const query = {

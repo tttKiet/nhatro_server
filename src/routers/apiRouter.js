@@ -90,6 +90,7 @@ router.get("/user/:_id/all-feedbacks", ApiController.getAllFeedbacksById);
 router.get("/bill/for-boardhouse", ApiController.handleBillForBoardHouse);
 router.get("/bill/rent/:id", ApiController.handleGetBillByRentId);
 router.post("/bill/create", ApiController.handleCreateBill);
+router.get("/bill/:_id/room", ApiController.handleGetRoomFromBillId);
 
 // Check already user's feedback for board house
 router.get(
