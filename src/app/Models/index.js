@@ -11,3 +11,5 @@ export { default as Comment } from "./Comment";
 export { default as FavouritePost } from "./FavouritePost";
 export { default as Rent } from "./Rent";
 export { default as FeedbackOfBoardHouse } from "./FeedbackOfBoardHouse";
+export { default as Bill } from "./Bill";
+export { default as Oclock } from "./Oclock";

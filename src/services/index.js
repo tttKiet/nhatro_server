@@ -12,3 +12,4 @@ export { default as commentServices } from "./commentServices";
 export { default as favouritePostServices } from "./favouritePostServices";
 export { default as rentServices } from "./rentServices";
 export { default as feedbackOfBoardHouseServices } from "./feedbackOfBoardHouseServices";
+export { default as billServices } from "./billServices";

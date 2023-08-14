@@ -13,6 +13,7 @@ import {
   favouritePostServices,
   feedbackOfBoardHouseServices,
   rentServices,
+  billServices,
 } from "../../services";
 const cloudinary = require("cloudinary").v2;
 
@@ -1701,6 +1702,74 @@ class ApiController {
     try {
       const response = await boardHouseServices.filterBoardHouse(data);
       return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [POST] /api/v1/bill/create [Bui Kiet]
+  async handleCreateBill(req, res, next) {
+    const { electric, water, rentId, billId } = req.body;
+    if (!rentId) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.createBill({
+        electric: electric || null,
+        water: water || null,
+        rentId,
+        billId,
+      });
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [GET] /api/v1/bill/for-boardhouse [Bui Kiet]
+  async handleBillForBoardHouse(req, res, next) {
+    const { boardHouseId, date } = req.query;
+    if (!boardHouseId) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.getBillOnMonth({
+        boardHouseId,
+        date,
+      });
+
+      if (response.err == 0) return res.status(200).json(response);
+      else {
+        res.status(401).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+  // [GET] /api/v1/bill/rent/:id [Bui Kiet]
+  async handleGetBillByRentId(req, res, next) {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.getBillByRentId({
+        rentId: id,
+      });
+
+      if (response.err == 0) return res.status(200).json(response);
+      else {
+        res.status(401).json(response);
+      }
     } catch (error) {
       return res.status(500).json(error);
     }

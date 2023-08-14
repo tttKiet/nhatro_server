@@ -86,6 +86,11 @@ router.delete("/user/:_id/delete-feedback", ApiController.handleDeleteFeedback);
 
 router.get("/user/:_id/all-feedbacks", ApiController.getAllFeedbacksById);
 
+// bill
+router.get("/bill/for-boardhouse", ApiController.handleBillForBoardHouse);
+router.get("/bill/rent/:id", ApiController.handleGetBillByRentId);
+router.post("/bill/create", ApiController.handleCreateBill);
+
 // Check already user's feedback for board house
 router.get(
   "/board-house/:_id/user-feedback",
