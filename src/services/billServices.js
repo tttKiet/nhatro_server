@@ -2,6 +2,7 @@ import { Bill, Rent, Oclock, BoardHouse } from "../app/Models";
 import { rentServices } from "../services";
 import * as dotenv from "dotenv";
 dotenv.config();
+var ObjectId = require("mongoose").Types.ObjectId;
 
 const createBill = async ({ electric, water, rentId, billId }) => {
   return new Promise(async (resolve, reject) => {
@@ -44,6 +45,7 @@ const createBill = async ({ electric, water, rentId, billId }) => {
             { $eq: [{ $month: "$createdAt" }, new Date().getUTCMonth() + 1] }, // Adding 1 since month is 0-indexed
           ],
         },
+        rent: rentId,
       });
 
       // console.log("billOnMonth, ", billOnMonth);
@@ -200,37 +202,14 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
         roomId: e.room._id,
       }));
 
+      console.log(ids, "ids: ---");
+
       async function testBill(id) {
-        const res = await createBill({ rentId: id });
-        let bill;
-        if (res.err === 0) {
-          res.bill;
-
-          bill = await Bill.findOne({ _id: res.bill._id })
-            .populate({
-              path: "rent",
-              select: "_id status",
-              populate: [
-                {
-                  path: "user",
-                  select: "_id fullName phone email",
-                },
-                {
-                  path: "room",
-                  select: "_id number size price",
-                },
-              ],
-            })
-            .sort({ createdAt: -1 });
-        }
-        return bill || null;
-      }
-
-      const billDocs = await Promise.all(
-        ids.map(async (v) => {
-          return (
-            (await Bill.findOne({
-              rent: v.rentId,
+        console.log(id, "---------------one:");
+        return new Promise(async (resolve, reject) => {
+          try {
+            let findBill = await Bill.findOne({
+              rent: id,
               $expr: {
                 $and: [
                   {
@@ -262,13 +241,42 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
                   },
                 ],
               })
-              .sort({ createdAt: -1 })) ||
-            (await testBill(v.rentId)) ||
-            "Erorr"
-          );
+              .sort({ createdAt: -1 });
+            if (!findBill) {
+              const res = await createBill({ rentId: id });
+              if (res.err === 0) {
+                findBill = await Bill.findOne({ _id: res.bill._id })
+                  .populate({
+                    path: "rent",
+                    select: "_id status",
+                    populate: [
+                      {
+                        path: "user",
+                        select: "_id fullName phone email",
+                      },
+                      {
+                        path: "room",
+                        select: "_id number size price",
+                      },
+                    ],
+                  })
+                  .sort({ createdAt: -1 });
+              }
+              console.log("-resestBill--------------", res);
+            }
+            resolve(findBill);
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+
+      const billDocs = await Promise.all(
+        ids.map(async (v) => {
+          let findBill = await testBill(v.rentId);
+          return findBill;
         })
       );
-      console.log("billDocs", billDocs);
 
       if (billDocs) {
         return resolve({ err: 0, message: "Ok!", data: billDocs });
@@ -284,11 +292,17 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
 
 const getBillByRentId = async ({ rentId }) => {
   return new Promise(async (resolve, reject) => {
-    // get all menber rent
-    const bills = await Bill.find({ rent: rentId }).sort({ createdAt: -1 });
-    return resolve({ err: 0, message: "OK", bills: bills });
-
     try {
+      const isValid = ObjectId.isValid(rentId);
+      if (!isValid) {
+        return resolve({
+          err: 3,
+          message: `${_id} invalid!`,
+        });
+      }
+      // get all menber rent
+      const bills = await Bill.find({ rent: rentId }).sort({ createdAt: -1 });
+      return resolve({ err: 0, message: "OK", bills: bills });
     } catch (e) {
       console.log(e);
       reject(e);
@@ -296,4 +310,39 @@ const getBillByRentId = async ({ rentId }) => {
   });
 };
 
-export default { createBill, getBillOnMonth, getBillByRentId };
+const toggleStatus = async ({ billId, status }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const billDoc = await Bill.findByIdAndUpdate({ _id: billId }, { status });
+      return resolve({ err: 0, message: "OK", bills: billDoc });
+    } catch (e) {
+      console.log(e);
+      reject(e);
+    }
+  });
+};
+
+const checkOutUser = async ({ billId, rentId, date }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await Bill.findByIdAndUpdate({ _id: billId }, { status: 1 });
+
+      await Rent.findByIdAndUpdate(
+        { _id: rentId },
+        { endDate: new Date(date) }
+      );
+      return resolve({ err: 0, message: "OK" });
+    } catch (e) {
+      console.log(e);
+      reject(e);
+    }
+  });
+};
+
+export default {
+  createBill,
+  getBillOnMonth,
+  checkOutUser,
+  getBillByRentId,
+  toggleStatus,
+};
