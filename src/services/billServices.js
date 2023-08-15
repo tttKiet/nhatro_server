@@ -388,4 +388,6 @@ export default {
   getBillOnMonth,
   getBillByRentId,
   getRoomFromBillID,
+  toggleStatus,
+  checkOutUser,
 };
