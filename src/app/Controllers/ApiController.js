@@ -1793,6 +1793,55 @@ class ApiController {
       return res.status(500).json(error);
     }
   }
+
+  // [POST] /api/v1/bill/toggle-status [Bui Kiet]
+  async handleToggleSTT(req, res, next) {
+    const { billId, status } = req.body;
+    if (!billId || (!status && status !== 0)) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.toggleStatus({
+        billId,
+        status,
+      });
+
+      if (response.err == 0) return res.status(200).json(response);
+      else {
+        res.status(401).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [POST] /api/v1/bill/check-out[Bui Kiet]
+  async handleCheckOut(req, res, next) {
+    const { rentId, billId, date } = req.body;
+    if (!billId || !rentId) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.checkOutUser({
+        billId,
+        rentId,
+        date,
+      });
+
+      if (response.err == 0) return res.status(200).json(response);
+      else {
+        res.status(401).json(response);
+      }
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
 }
 
 export default new ApiController();
