@@ -90,6 +90,7 @@ router.get("/user/:_id/all-feedbacks", ApiController.getAllFeedbacksById);
 router.get("/bill/for-boardhouse", ApiController.handleBillForBoardHouse);
 router.get("/bill/rent/:id", ApiController.handleGetBillByRentId);
 router.post("/bill/create", ApiController.handleCreateBill);
+router.get("/bill/:_id/room", ApiController.handleGetRoomFromBillId);
 router.post("/bill/toggle-status", ApiController.handleToggleSTT);
 router.post("/bill/check-out", ApiController.handleCheckOut);
 
@@ -127,6 +128,7 @@ router.get(
   "/board-house/:_id/rating-price",
   ApiController.handleGetRatingAndPriceBh
 );
+router.post("/board-house/filter", ApiController.handleFilterBoardHouse);
 
 // /api/v1/boardHouse/:_id/create?user= [The Van]
 router.post(

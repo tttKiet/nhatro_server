@@ -277,6 +277,19 @@ const updateRoom = (id, roomData) => {
   });
 };
 
+const getRoomFromBillId = (billId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      return resolve({
+        err: 2,
+        message: "Something went wrong at deleteRoomById",
+      });
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 export default {
   createRoom,
   getAllRoomsByAdminId,

@@ -1689,6 +1689,24 @@ class ApiController {
     }
   }
 
+  // [POST] /api/v1/board-house/filter [The Van]
+  async handleFilterBoardHouse(req, res, next) {
+    const { data } = req.body;
+    console.log("data", data);
+    if (!data) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data",
+      });
+    }
+    try {
+      const response = await boardHouseServices.filterBoardHouse(data);
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
   // [POST] /api/v1/bill/create [Bui Kiet]
   async handleCreateBill(req, res, next) {
     const { electric, water, rentId, billId } = req.body;
@@ -1704,6 +1722,25 @@ class ApiController {
         water: water || null,
         rentId,
         billId,
+      });
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(500).json(error);
+    }
+  }
+
+  // [GET] /api/v1/bill/:_id/room [The Van]
+  async handleGetRoomFromBillId(req, res, next) {
+    const { _id } = req.params;
+    if (!_id) {
+      return res.status(400).json({
+        err: 1,
+        message: "Missing data!!",
+      });
+    }
+    try {
+      const response = await billServices.getRoomFromBillID({
+        billId: _id,
       });
       return res.status(200).json(response);
     } catch (error) {

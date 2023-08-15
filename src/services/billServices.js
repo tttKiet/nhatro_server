@@ -347,10 +347,47 @@ const checkOutUser = async ({ billId, rentId, date }) => {
   });
 };
 
+const getRoomFromBillID = async ({ billId }) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const billDoc = await Bill.find({
+        _id: billId,
+      }).populate({
+        path: "rent",
+        populate: [
+          {
+            path: "room",
+            select: "number price",
+            populate: {
+              path: "boardHouseId",
+              select: "name address waterPrice electricPrice",
+            },
+          },
+          {
+            path: "user",
+            select: "fullName email phone",
+          },
+        ],
+      });
+      if (billDoc) {
+        return resolve({ err: 0, message: "OK", data: billDoc });
+      }
+
+      return resolve({
+        err: 1,
+        message: "Something error at getRoomFromBillID",
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 export default {
   createBill,
   getBillOnMonth,
-  checkOutUser,
   getBillByRentId,
+  getRoomFromBillID,
   toggleStatus,
+  checkOutUser,
 };
