@@ -65,11 +65,15 @@ const createBill = async ({ electric, water, rentId, billId }) => {
       // update
       if (billOnMonth) {
         electricTotal =
-          Number.parseFloat(electric) -
-            Number.parseFloat(OclockPrev.oldElectric) || 0;
+          electricTotal == 0 || electricTotal
+            ? Number.parseFloat(electric) -
+              (Number.parseFloat(OclockPrev.oldElectric) || 0)
+            : 0;
         waterTotal =
-          Number.parseFloat(water) - Number.parseFloat(OclockPrev.oldWater) ||
-          0;
+          water == 0 || water
+            ? Number.parseFloat(water) -
+              (Number.parseFloat(OclockPrev.oldWater) || 0)
+            : 0;
 
         if (
           (water && billOnMonth.oldWaterNumber > water) ||
@@ -83,8 +87,8 @@ const createBill = async ({ electric, water, rentId, billId }) => {
 
         const opOclock = {};
 
-        electric && (opOclock.electric = electric);
-        water && (opOclock.water = water);
+        electric >= 0 && (opOclock.electric = electric);
+        water >= 0 && (opOclock.water = water);
         await Oclock.findOneAndUpdate(
           {
             _id: OclockPrev._id,
@@ -125,9 +129,11 @@ const createBill = async ({ electric, water, rentId, billId }) => {
       // find bill a month before
 
       electricTotal = electric
-        ? electric - Number.parseFloat(OclockPrev.electric)
+        ? electric - (Number.parseFloat(OclockPrev.electric) || 0)
         : 0;
-      waterTotal = water ? water - Number.parseFloat(OclockPrev.water) : 0;
+      waterTotal = water
+        ? water - (Number.parseFloat(OclockPrev.water) || 0)
+        : 0;
 
       if (electricTotal < 0 || waterTotal < 0)
         return resolve({
@@ -178,7 +184,6 @@ const createBill = async ({ electric, water, rentId, billId }) => {
         message: "Failed!!! Please try again!",
       });
     } catch (e) {
-      console.log(e);
       return reject(e);
     }
   });
@@ -202,10 +207,7 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
         roomId: e.room._id,
       }));
 
-      console.log(ids, "ids: ---");
-
       async function testBill(id) {
-        console.log(id, "---------------one:");
         return new Promise(async (resolve, reject) => {
           try {
             let findBill = await Bill.findOne({
@@ -242,7 +244,10 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
                 ],
               })
               .sort({ createdAt: -1 });
-            if (!findBill) {
+            if (
+              !findBill &&
+              new Date(date).getUTCMonth() == new Date().getUTCMonth()
+            ) {
               const res = await createBill({ rentId: id });
               if (res.err === 0) {
                 findBill = await Bill.findOne({ _id: res.bill._id })
@@ -262,7 +267,6 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
                   })
                   .sort({ createdAt: -1 });
               }
-              console.log("-resestBill--------------", res);
             }
             resolve(findBill);
           } catch (e) {
@@ -279,12 +283,16 @@ const getBillOnMonth = async ({ date = new Date(), boardHouseId }) => {
       );
 
       if (billDocs) {
-        return resolve({ err: 0, message: "Ok!", data: billDocs });
+        return resolve({
+          err: 0,
+          message: "Ok!",
+          data: billDocs.filter((e) => e != null),
+        });
       }
 
       return resolve({ err: 1, message: "Error!" });
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       reject(e);
     }
   });
@@ -304,7 +312,7 @@ const getBillByRentId = async ({ rentId }) => {
       const bills = await Bill.find({ rent: rentId }).sort({ createdAt: -1 });
       return resolve({ err: 0, message: "OK", bills: bills });
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       reject(e);
     }
   });
@@ -316,7 +324,7 @@ const toggleStatus = async ({ billId, status }) => {
       const billDoc = await Bill.findByIdAndUpdate({ _id: billId }, { status });
       return resolve({ err: 0, message: "OK", bills: billDoc });
     } catch (e) {
-      console.log(e);
+      // console.log(e);
       reject(e);
     }
   });
